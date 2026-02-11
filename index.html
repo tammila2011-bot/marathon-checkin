@@ -87,7 +87,7 @@
 </div>
 
 <script>
-   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWywYcukrH1p2OU6fLQzyZAuValfmlC7mRsk5w8hHRF8Dmlx-Ij8ss92JYMOtkqSeG/exec";
+   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxTh2wnrEiSfhdUystKXMShLaxI23xh3-j-EyDvaFm9cgv0brvYfgSeAZUwwvcwhd0u/exec";
     
     const distances = { 'A':0, 'B':0.5, 'C':1.0, 'D':2.0, 'E':2.5, 'F':4.0 };
     let localRunners = JSON.parse(localStorage.getItem('runners_local')) || {};
@@ -185,7 +185,25 @@
     function showLoading(show) {
         document.getElementById('loading').style.display = show ? 'flex' : 'none';
     }
-</script>
+// เพิ่มส่วนนี้เพื่อรองรับการสแกนอัตโนมัติ
+window.onload = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const pointFromUrl = urlParams.get('point');
+
+    if (pointFromUrl) {
+        // เปลี่ยนไปหน้าสแกน (Tab ที่ 2)
+        const triggerEl = document.querySelector('button[data-bs-target="#tab-run"]');
+        const tab = new bootstrap.Tab(triggerEl);
+        tab.show();
+
+        // แสดงสถานะว่าสแกนจากจุดไหนมา
+        document.getElementById('scanStatus').className = "alert alert-success text-center fw-bold shadow-sm";
+        document.getElementById('scanStatus').innerHTML = `📍 ระบบตรวจพบจุดเช็คอิน: ${pointFromUrl}`;
+        
+        // ล็อคค่าจุดเริ่มต้นใน session
+        activeSession = { start: pointFromUrl };
+    }
+};</script>
 
 </body>
 </html>
