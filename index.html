@@ -183,7 +183,7 @@
                 if(!summary[bib]) summary[bib] = { name: name, dist: 0 };
                 if(type === 'RUN') summary[bib].dist += parseFloat(dist || 0);
             });
-            const sorted = Object.entries(summary).sort((a,b) => b[1].dist - a[1].dist).slice(0,10);
+            const sorted = Object.entries(summary).sort((a,b) => b[1].dist - a[1].dist).slice(0,30);
             tbody.innerHTML = sorted.map(([bib, d], i) => `<tr><td>${i+1}</td><td>${bib}</td><td>${d.name}</td><td class="text-end fw-bold">${d.dist.toFixed(2)}</td></tr>`).join('');
         } catch(e) { tbody.innerHTML = 'เลื่อนเพื่อดูผลภายหลัง'; }
         showLoading(false);
@@ -193,3 +193,4 @@
 </script>
 </body>
 </html>
+
