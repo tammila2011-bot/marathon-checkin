@@ -13,7 +13,6 @@
             font-family: 'Prompt', sans-serif; 
             min-height: 100vh;
         }
-        /* หน้าปกและโลโก้ */
         .hero-section {
             padding: 30px 0;
             text-align: center;
@@ -23,11 +22,6 @@
             filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));
             margin-bottom: 15px;
         }
-        .navbar {
-            background: linear-gradient(to right, #6f42c1, #a18cd1) !important;
-            border-radius: 0 0 25px 25px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        }
         .card { 
             border: none; 
             border-radius: 25px; 
@@ -35,7 +29,12 @@
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
         }
-       .btn-checkpoint { 
+        .nav-pills .nav-link { color: #666; border-radius: 50px; }
+        .nav-pills .nav-link.active {
+            background: linear-gradient(45deg, #6f42c1, #8e44ad);
+            box-shadow: 0 4px 15px rgba(111,66,193,0.3);
+        }
+        .btn-checkpoint { 
             height: 110px; font-size: 1.3rem; font-weight: 600; 
             border-radius: 20px; transition: 0.3s; display: none; 
             border: none;
@@ -52,15 +51,6 @@
 
 <div class="hero-section container">
     <img src="logo.png" alt="FREE RUN SUNNY 2025" class="logo-img">
-</div>
-    </style>
-</head>
-<body>
-
-<div id="loading" class="loading-overlay"><div class="spinner-border text-primary"></div></div>
-
-<div class="hero-section container">
-    <img src="https://raw.githubusercontent.com/tammila2011-bot/marathon-checkin/main/%E0%B8%A3%E0%B8%B0%E0%B8%9A%E0%B8%9A%E0%B8%94%E0%B8%B4%E0%B8%9A%E0%B8%B1%E0%B8%94%E0%B8%B4%E0%B8%81%E0%B8%B2%E0%B8%A3.png" alt="FREE RUN SUNNY 2025" class="logo-img">
 </div>
 
 <div class="container pb-5">
@@ -139,93 +129,3 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxTh2wnrEiSfhdUystKXMShLaxI23xh3-j-EyDvaFm9cgv0brvYfgSeAZUwwvcwhd0u/exec";
     const distances = { 'A':0, 'B':0.5, 'C':1.0, 'D':2.0, 'E':2.5, 'F':4.0 };
     const pointNames = { 'A':'ทิชเชอร์แค้มป์', 'B':'ตำมิละ', 'C':'วัดหลวง', 'D':'เสาพญานาค', 'E':'วัดหาดไคร้', 'F':'ปลาบึกสีทอง' };
-    
-    let localRunners = JSON.parse(localStorage.getItem('runners_local')) || {};
-    let activeSession = null;
-
-    document.getElementById('regForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const bib = document.getElementById('regBib').value;
-        const name = document.getElementById('regName').value;
-        const data = { action: 'register', bib: bib, name: name, gender: document.getElementById('regGender').value };
-        showLoading(true);
-        try {
-            await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
-            localRunners[bib] = data;
-            localStorage.setItem('runners_local', JSON.stringify(localRunners));
-            alert('ลงทะเบียนสำเร็จ! ยินดีต้อนรับคุณ ' + name);
-            e.target.reset();
-        } catch(err) { alert('เกิดข้อผิดพลาดในการเชื่อมต่อ'); }
-        showLoading(false);
-    };
-
-    async function checkPoint(code) {
-        const bib = document.getElementById('scanBib').value;
-        if(!bib) return alert('กรุณาระบุเลข BIB ก่อนบันทึกครับ');
-        if(!activeSession) {
-            activeSession = { start: code, bib: bib };
-            document.getElementById('scanStatus').className = "alert alert-warning text-center fw-bold shadow-sm";
-            document.getElementById('scanStatus').innerHTML = `🏃‍♂️ บันทึกจุดเริ่มที่: ${pointNames[code]}<br>วิ่งต่อไปยังจุดอื่นเพื่อเก็บระยะทาง`;
-        } else {
-            const dist = Math.abs(distances[code] - distances[activeSession.start]);
-            if(dist === 0) return alert('คุณอยู่ที่จุดเดิมครับ');
-            const data = { action: 'record', bib: bib, name: localRunners[bib] ? localRunners[bib].name : 'นักวิ่ง', start: activeSession.start, end: code, distance: dist };
-            showLoading(true);
-            try {
-                await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
-                alert(`เช็คอินสำเร็จ! ระยะจากจุด ${activeSession.start} ไป ${code} คือ ${dist} กม.`);
-                activeSession = null;
-                document.getElementById('scanStatus').className = "alert alert-secondary text-center";
-                document.getElementById('scanStatus').innerText = "✅ สำเร็จ! กรุณาสแกนจุดถัดไป";
-                document.querySelectorAll('.btn-checkpoint').forEach(b => b.style.display = 'none');
-            } catch(err) { alert('บันทึกไม่สำเร็จ'); }
-            showLoading(false);
-        }
-    }
-
-    window.addEventListener('load', () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const point = urlParams.get('point');
-        if (point && pointNames[point]) {
-            new bootstrap.Tab(document.querySelector('button[data-bs-target="#tab-run"]')).show();
-            document.getElementById('btn' + point).style.display = 'block';
-            document.getElementById('scanStatus').className = "alert alert-info text-center fw-bold shadow-sm";
-            document.getElementById('scanStatus').innerText = `📍 คุณถึงจุด: ${pointNames[point]}`;
-        }
-    });
-
-    async function fetchDataFromCloud() {
-        showLoading(true);
-        const tbody = document.getElementById('top10Body');
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center">กำลังประมวลผลอันดับ...</td></tr>';
-        try {
-            const res = await fetch(SCRIPT_URL);
-            const rows = await res.json();
-            let summary = {};
-            rows.slice(1).forEach(r => {
-                const [date, type, bib, name, gen, dist] = r;
-                if(!summary[bib]) summary[bib] = { name: name, dist: 0 };
-                if(type === 'RUN') summary[bib].dist += parseFloat(dist || 0);
-            });
-            const sorted = Object.entries(summary).sort((a,b) => b[1].dist - a[1].dist).slice(0, 30);
-            tbody.innerHTML = sorted.map(([bib, d], i) => `
-                <tr>
-                    <td><span class="fw-bold">${i+1}</span></td>
-                    <td><span class="badge badge-bib rounded-pill">${bib}</span></td>
-                    <td>${d.name}</td>
-                    <td class="text-end fw-bold text-primary">${d.dist.toFixed(2)}</td>
-                </tr>`).join('');
-        } catch(e) { tbody.innerHTML = 'กรุณาลองใหม่อีกครั้ง'; }
-        showLoading(false);
-    }
-    function showLoading(show) { document.getElementById('loading').style.display = show ? 'flex' : 'none'; }
-</script>
-</body>
-</html>
-
-
-
-
-
-
-
