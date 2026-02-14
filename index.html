@@ -142,7 +142,6 @@
     let activeSession = null;
 
     function startScanner() {
-        // ล้างปุ่มเก่าทิ้งก่อนสแกนใหม่ทุกครั้งเพื่อป้องกันการจำค่าเดิม
         document.querySelectorAll('.btn-checkpoint').forEach(b => b.style.display = 'none');
         document.getElementById('scanStatus').className = "alert alert-secondary text-center";
         document.getElementById('scanStatus').innerText = "กำลังค้นหา QR Code...";
@@ -150,24 +149,39 @@
         document.getElementById('startScanBtn').style.display = 'none';
         document.getElementById('stopScanBtn').style.display = 'block';
         
-        html5QrCode = new Html5Qrcode("reader");
-        html5QrCode.start(
-            { facingMode: "environment" }, 
-            { fps: 10, qrbox: { width: 250, height: 250 } },
-            (decodedText) => {
-                try {
-                    const url = new URL(decodedText);
-                    const point = url.searchParams.get("point");
-                    if (point && pointNames[point]) {
-                        handleScannedPoint(point);
-                        stopScanner(); 
-                    }
-                } catch(e) { console.log("ไม่ใช่ลิงก์จุดเช็คอิน"); }
-            },
-            (errorMessage) => { }
-        ).catch(err => {
-            alert("เข้าถึงกล้องไม่ได้: " + err);
-            stopScanner();
+        // ตรวจสอบเบื้องต้นว่ามีกล้องไหม
+        Html5Qrcode.getCameras().then(cameras => {
+            if (cameras && cameras.length > 0) {
+                // ถ้ามีกล้อง ให้เลือกใช้กล้องหลังตัวที่เหมาะสมที่สุด
+                const cameraId = cameras.length > 1 ? cameras[cameras.length - 1].id : cameras[0].id;
+                
+                if (html5QrCode) { html5QrCode.clear(); }
+                html5QrCode = new Html5Qrcode("reader");
+                
+                html5QrCode.start(
+                    cameraId, 
+                    { fps: 10, qrbox: { width: 250, height: 250 } },
+                    (decodedText) => {
+                        try {
+                            const url = new URL(decodedText);
+                            const point = url.searchParams.get("point");
+                            if (point && pointNames[point]) {
+                                handleScannedPoint(point);
+                                stopScanner(); 
+                            }
+                        } catch(e) { console.log("ไม่ใช่ลิงก์จุดเช็คอิน"); }
+                    },
+                    (errorMessage) => { }
+                ).catch(err => {
+                    console.error("Camera start error:", err);
+                    // ถ้าแบบเจาะจงใช้ไม่ได้ ให้ลองแบบ Standard
+                    html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (txt) => { /* handle success */ });
+                });
+            } else {
+                alert("ไม่พบอุปกรณ์กล้องในเครื่องนี้ครับ");
+            }
+        }).catch(err => {
+            alert("เกิดข้อผิดพลาดในการเข้าถึงกล้อง: " + err);
         });
     }
 
@@ -281,6 +295,7 @@
 </script>
 </body>
 </html>
+
 
 
 
