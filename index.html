@@ -95,44 +95,76 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxVnyWhSRp3riGcBKQwXwiRDa_w1-XOVx5iM-a0XFy9S_LkQF2bae9Ku_JoPISqywhf/exec";
     const distances = { 'A':0, 'B':0.5, 'C':1.0, 'D':2.0, 'E':2.5, 'F':4.0 };
     const pointNames = { 'A':'ทิชเชอร์แค้มป์', 'B':'ตำมิละ', 'C':'วัดหลวง', 'D':'เสาพญานาค', 'E':'วัดหาดไคร้', 'F':'ปลาบึกสีทอง' };
-    let html5QrCode, availableCameras = [], currentCamIdx = 0, activeSession = null;
+    let html5QrCode, activeSession = null;
     let localRunners = JSON.parse(localStorage.getItem('runners_local')) || {};
 
+    // ฟังก์ชันเริ่มกล้องแบบใหม่
     async function startScanner() {
-        document.querySelectorAll('.btn-checkpoint').forEach(b => b.style.display = 'none');
-        document.getElementById('scanStatus').innerText = "กำลังเข้าถึงกล้อง...";
+        document.getElementById('scanStatus').innerText = "กำลังค้นหากล้อง...";
         try {
-            availableCameras = await Html5Qrcode.getCameras();
-            if (availableCameras.length > 0) {
-                currentCamIdx = availableCameras.length - 1;
-                launchCamera(availableCameras[currentCamIdx].id);
+            const cameras = await Html5Qrcode.getCameras();
+            if (cameras && cameras.length > 0) {
+                // เลือกกล้องหลังตัวสุดท้าย (มักจะเป็นกล้องหลัก)
+                const backCamera = cameras[cameras.length - 1]; 
+                
+                if (html5QrCode) await html5QrCode.clear();
+                html5QrCode = new Html5Qrcode("reader");
+                
+                await html5QrCode.start(
+                    backCamera.id, 
+                    { fps: 10, qrbox: 250 },
+                    (text) => { /* สแกนติด */
+                        try {
+                            const url = new URL(text);
+                            const p = url.searchParams.get("point");
+                            if (p && pointNames[p]) { handleScannedPoint(p); stopScanner(); }
+                        } catch(e) {}
+                    },
+                    () => {} // ค้นหาต่อไป
+                );
+                
                 document.getElementById('startScanBtn').style.display = 'none';
                 document.getElementById('stopScanBtn').style.display = 'block';
-                if(availableCameras.length > 1) document.getElementById('switchBtn').style.display = 'block';
+                document.getElementById('scanStatus').innerText = "✅ กล้องพร้อมแล้ว! สแกนได้เลย";
             } else { alert("ไม่พบกล้อง"); }
-        } catch (err) { alert("กล้องถูกบล็อกหรือมีปัญหา"); }
+        } catch (err) { 
+            document.getElementById('scanStatus').innerText = "❌ เข้าถึงกล้องไม่ได้: " + err;
+        }
     }
 
-    function launchCamera(id) {
-        if (html5QrCode) html5QrCode.clear();
-        html5QrCode = new Html5Qrcode("reader");
-        html5QrCode.start(id, { fps: 10, qrbox: 250 }, (text) => {
-            try {
-                const url = new URL(text);
-                const p = url.searchParams.get("point");
-                if (p && pointNames[p]) {
-                    handleScannedPoint(p);
-                    stopScanner();
+    // ฟังก์ชันดึงข้อมูลสถิติ (ปรับปรุงให้รองรับ Google Sheets)
+    async function fetchDataFromCloud() {
+        const tbody = document.getElementById('top10Body');
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center">กำลังโหลดข้อมูลล่าสุด...</td></tr>';
+        try {
+            const res = await fetch(SCRIPT_URL);
+            const rows = await res.json(); 
+            let summary = {};
+            
+            // ข้ามแถวหัวข้อ (แถวที่ 0)
+            rows.slice(1).forEach(r => {
+                const type = r[1], bib = r[2], dist = parseFloat(r[5] || 0);
+                if(type === 'RUN' && bib) {
+                    summary[bib] = (summary[bib] || 0) + dist;
                 }
-            } catch(e) {}
-        }, () => {}).catch(() => { document.getElementById('scanStatus').innerText = "ลองสลับกล้องดูครับ"; });
-    }
+            });
 
-    function switchCamera() {
-        currentCamIdx = (currentCamIdx + 1) % availableCameras.length;
-        if (html5QrCode) html5QrCode.stop().then(() => launchCamera(availableCameras[currentCamIdx].id));
-    }
+            const sorted = Object.entries(summary).sort((a,b) => b[1] - a[1]).slice(0, 30);
+            if(sorted.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center">ยังไม่มีข้อมูลการวิ่ง</td></tr>';
+                return;
+            }
 
+            tbody.innerHTML = sorted.map(([bib, d], i) => `
+                <tr>
+                    <td>${i+1}</td>
+                    <td><span class="badge badge-bib">${bib}</span></td>
+                    <td class="text-end fw-bold text-primary">${d.toFixed(2)} กม.</td>
+                </tr>`).join('');
+        } catch(e) { 
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center text-danger">ไม่สามารถดึงข้อมูลได้ (เช็คการ Deploy Script)</td></tr>'; 
+        }
+    }
     function stopScanner() {
         if (html5QrCode) html5QrCode.stop().then(() => {
             document.getElementById('startScanBtn').style.display = 'block';
@@ -206,6 +238,7 @@
 </script>
 </body>
 </html>
+
 
 
 
