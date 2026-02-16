@@ -144,49 +144,61 @@
     let activeSession = null;
 
     function startScanner() {
-        // ล้างปุ่มเก่าและสถานะเดิม
-        document.querySelectorAll('.btn-checkpoint').forEach(b => b.style.display = 'none');
-        const statusDiv = document.getElementById('scanStatus');
-        statusDiv.className = "alert alert-secondary text-center";
-        statusDiv.innerText = "กำลังเริ่มต้นกล้อง...";
-        
-        document.getElementById('startScanBtn').style.display = 'none';
-        document.getElementById('stopScanBtn').style.display = 'block';
+        let currentCameraIndex = 0;
+    let availableCameras = [];
 
-        if (html5QrCode) { 
-            html5QrCode.clear(); 
-        }
+    async function startScanner() {
+        const statusDiv = document.getElementById('scanStatus');
+        statusDiv.innerText = "กำลังเข้าถึงกล้อง...";
         
+        try {
+            availableCameras = await Html5Qrcode.getCameras();
+            if (availableCameras && availableCameras.length > 0) {
+                // เลือกกล้องหลังตัวสุดท้าย (มักจะเป็นเลนส์หลัก)
+                currentCameraIndex = availableCameras.length - 1;
+                launchCamera(availableCameras[currentCameraIndex].id);
+                
+                document.getElementById('startScanBtn').style.display = 'none';
+                document.getElementById('stopScanBtn').style.display = 'block';
+                if(availableCameras.length > 1) {
+                    document.getElementById('switchBtn').style.display = 'block';
+                }
+            } else {
+                alert("ไม่พบกล้องในเครื่องนี้");
+            }
+        } catch (err) {
+            alert("Error: " + err);
+        }
+    }
+
+    function launchCamera(cameraId) {
+        if (html5QrCode) { html5QrCode.clear(); }
         html5QrCode = new Html5Qrcode("reader");
         
-        // ใช้คำสั่งเปิดกล้องหลังแบบ Environment (มาตรฐานที่สุดสำหรับมือถือ)
-        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-        
         html5QrCode.start(
-            { facingMode: "environment" }, 
-            config,
+            cameraId, 
+            { fps: 10, qrbox: { width: 250, height: 250 } },
             (decodedText) => {
-                try {
-                    const url = new URL(decodedText);
-                    const point = url.searchParams.get("point");
-                    if (point && pointNames[point]) {
-                        handleScannedPoint(point);
-                        stopScanner(); 
-                    }
-                } catch(e) { 
-                    console.log("QR Code ไม่ใช่ลิงก์ที่ระบบต้องการ"); 
+                const url = new URL(decodedText);
+                const point = url.searchParams.get("point");
+                if (point) {
+                    handleScannedPoint(point);
+                    stopScanner();
                 }
             },
-            (errorMessage) => { 
-                // กำลังค้นหา... ไม่ต้องทำอะไร
-            }
+            (errorMessage) => { /* ค้นหาต่อ... */ }
         ).catch(err => {
-            console.error("Error:", err);
-            statusDiv.className = "alert alert-danger text-center";
-            statusDiv.innerText = "ไม่สามารถเปิดกล้องได้ กรุณาตรวจสอบการอนุญาตสิทธิ์";
-            stopScanner();
+            document.getElementById('scanStatus').innerText = "กล้องนี้ใช้ไม่ได้ ลองกด 'สลับกล้อง'";
         });
     }
+
+    function switchCamera() {
+        currentCameraIndex = (currentCameraIndex + 1) % availableCameras.length;
+        if (html5QrCode && html5QrCode.isScanning) {
+            html5QrCode.stop().then(() => {
+                launchCamera(availableCameras[currentCameraIndex].id);
+            });
+        }
 
     function stopScanner() {
         if (html5QrCode && html5QrCode.isScanning) {
@@ -294,6 +306,7 @@
 </script>
 </body>
 </html>
+
 
 
 
