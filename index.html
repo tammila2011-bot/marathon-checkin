@@ -97,129 +97,67 @@
     const pointNames = { 'A':'ทิชเชอร์แค้มป์', 'B':'ตำมิละ', 'C':'วัดหลวง', 'D':'เสาพญานาค', 'E':'วัดหาดไคร้', 'F':'ปลาบึกสีทอง' };
     let html5QrCode, activeSession = null;
     let localRunners = JSON.parse(localStorage.getItem('runners_local')) || {};
+    let allCameras = [];
+    let currentCamIdx = 0;
 
-    // ฟังก์ชันเริ่มกล้องแบบใหม่
     async function startScanner() {
-       // 1. เพิ่มฟังก์ชันสลับกล้อง (ใส่ต่อจาก startScanner)
-let currentCamIdx = 0;
-let allCameras = [];
-
-async function switchCamera() {
-    if (allCameras.length > 1) {
-        currentCamIdx = (currentCamIdx + 1) % allCameras.length;
-        if (html5QrCode) {
-            await html5QrCode.stop();
-            launchCamera(allCameras[currentCamIdx].id);
-        }
-    }
-}
-
-// 2. ปรับปรุง startScanner เล็กน้อยเพื่อให้เก็บรายชื่อกล้องไว้สลับ
-async function startScanner() {
-    document.getElementById('scanStatus').innerText = "กำลังค้นหากล้อง...";
-    try {
-        allCameras = await Html5Qrcode.getCameras();
-        if (allCameras && allCameras.length > 0) {
-            currentCamIdx = allCameras.length - 1; // เริ่มที่กล้องหลัง
-            launchCamera(allCameras[currentCamIdx].id);
-            
-            document.getElementById('startScanBtn').style.display = 'none';
-            document.getElementById('stopScanBtn').style.display = 'block';
-            if(allCameras.length > 1) document.getElementById('switchBtn').style.display = 'block';
-        } else { alert("ไม่พบกล้อง"); }
-    } catch (err) { alert("❌ เข้าถึงกล้องไม่ได้: " + err); }
-}
-
-// 3. แยกฟังก์ชันเปิดกล้องออกมาเพื่อให้เรียกซ้ำได้
-function launchCamera(cameraId) {
-    if (html5QrCode) html5QrCode.clear();
-    html5QrCode = new Html5Qrcode("reader");
-    html5QrCode.start(
-        cameraId, 
-        { fps: 10, qrbox: 250 },
-        (text) => {
-            try {
-                const url = new URL(text);
-                const p = url.searchParams.get("point");
-                if (p && pointNames[p]) { handleScannedPoint(p); stopScanner(); }
-            } catch(e) {}
-        },
-        () => {}
-    ).catch(err => {
-        document.getElementById('scanStatus').innerText = "กล้องตัวนี้มีปัญหา ลองกด 'สลับกล้อง'";
-    });
-}
         document.getElementById('scanStatus').innerText = "กำลังค้นหากล้อง...";
         try {
-            const cameras = await Html5Qrcode.getCameras();
-            if (cameras && cameras.length > 0) {
-                // เลือกกล้องหลังตัวสุดท้าย (มักจะเป็นกล้องหลัก)
-                const backCamera = cameras[cameras.length - 1]; 
-                
-                if (html5QrCode) await html5QrCode.clear();
-                html5QrCode = new Html5Qrcode("reader");
-                
-                await html5QrCode.start(
-                    backCamera.id, 
-                    { fps: 10, qrbox: 250 },
-                    (text) => { /* สแกนติด */
-                        try {
-                            const url = new URL(text);
-                            const p = url.searchParams.get("point");
-                            if (p && pointNames[p]) { handleScannedPoint(p); stopScanner(); }
-                        } catch(e) {}
-                    },
-                    () => {} // ค้นหาต่อไป
-                );
-                
+            allCameras = await Html5Qrcode.getCameras();
+            if (allCameras && allCameras.length > 0) {
+                currentCamIdx = allCameras.length - 1; // เลือกกล้องหลัง
+                launchCamera(allCameras[currentCamIdx].id);
                 document.getElementById('startScanBtn').style.display = 'none';
                 document.getElementById('stopScanBtn').style.display = 'block';
-                document.getElementById('scanStatus').innerText = "✅ กล้องพร้อมแล้ว! สแกนได้เลย";
+                if(allCameras.length > 1) document.getElementById('switchBtn').style.display = 'block';
             } else { alert("ไม่พบกล้อง"); }
-        } catch (err) { 
-            document.getElementById('scanStatus').innerText = "❌ เข้าถึงกล้องไม่ได้: " + err;
-        }
+        } catch (err) { alert("❌ เข้าถึงกล้องไม่ได้: " + err); }
     }
 
-    // ฟังก์ชันดึงข้อมูลสถิติ (ปรับปรุงให้รองรับ Google Sheets)
-    async function fetchDataFromCloud() {
-        const tbody = document.getElementById('top10Body');
-        tbody.innerHTML = '<tr><td colspan="3" class="text-center">กำลังโหลดข้อมูลล่าสุด...</td></tr>';
-        try {
-            const res = await fetch(SCRIPT_URL);
-            const rows = await res.json(); 
-            let summary = {};
-            
-            // ข้ามแถวหัวข้อ (แถวที่ 0)
-            rows.slice(1).forEach(r => {
-                const type = r[1], bib = r[2], dist = parseFloat(r[5] || 0);
-                if(type === 'RUN' && bib) {
-                    summary[bib] = (summary[bib] || 0) + dist;
-                }
-            });
-
-            const sorted = Object.entries(summary).sort((a,b) => b[1] - a[1]).slice(0, 30);
-            if(sorted.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" class="text-center">ยังไม่มีข้อมูลการวิ่ง</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = sorted.map(([bib, d], i) => `
-                <tr>
-                    <td>${i+1}</td>
-                    <td><span class="badge badge-bib">${bib}</span></td>
-                    <td class="text-end fw-bold text-primary">${d.toFixed(2)} กม.</td>
-                </tr>`).join('');
-        } catch(e) { 
-            tbody.innerHTML = '<tr><td colspan="3" class="text-center text-danger">ไม่สามารถดึงข้อมูลได้ (เช็คการ Deploy Script)</td></tr>'; 
+    function launchCamera(cameraId) {
+        if (html5QrCode) {
+            html5QrCode.clear();
         }
-    }
-    function stopScanner() {
-        if (html5QrCode) html5QrCode.stop().then(() => {
-            document.getElementById('startScanBtn').style.display = 'block';
-            document.getElementById('stopScanBtn').style.display = 'none';
-            document.getElementById('switchBtn').style.display = 'none';
+        html5QrCode = new Html5Qrcode("reader");
+        html5QrCode.start(
+            cameraId, 
+            { fps: 10, qrbox: 250 },
+            (text) => {
+                try {
+                    const url = new URL(text);
+                    const p = url.searchParams.get("point");
+                    if (p && pointNames[p]) { 
+                        handleScannedPoint(p); 
+                        stopScanner(); 
+                    }
+                } catch(e) { console.log("QR ไม่ใช่ลิ้งค์จุดเช็คอิน"); }
+            },
+            () => {}
+        ).then(() => {
+            document.getElementById('scanStatus').innerText = "✅ กล้องพร้อมแล้ว! สแกนได้เลย";
+        }).catch(err => {
+            document.getElementById('scanStatus').innerText = "กล้องมีปัญหา ลองกด 'สลับกล้อง'";
         });
+    }
+
+    async function switchCamera() {
+        if (allCameras.length > 1) {
+            currentCamIdx = (currentCamIdx + 1) % allCameras.length;
+            if (html5QrCode) {
+                await html5QrCode.stop();
+                launchCamera(allCameras[currentCamIdx].id);
+            }
+        }
+    }
+
+    function stopScanner() {
+        if (html5QrCode && html5QrCode.isScanning) {
+            html5QrCode.stop().then(() => {
+                document.getElementById('startScanBtn').style.display = 'block';
+                document.getElementById('stopScanBtn').style.display = 'none';
+                document.getElementById('switchBtn').style.display = 'none';
+            });
+        }
     }
 
     function handleScannedPoint(p) {
@@ -241,35 +179,84 @@ function launchCamera(cameraId) {
             if(dist === 0) return alert("คุณอยู่ที่จุดเดิมครับ");
             showLoading(true);
             try {
-                await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'record', bib: bib, name: localRunners[bib]?.name || 'นักวิ่ง', start: activeSession.start, end: code, distance: dist }), mode: 'no-cors' });
+                await fetch(SCRIPT_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ 
+                        action: 'record', 
+                        bib: bib, 
+                        name: localRunners[bib]?.name || 'นักวิ่ง', 
+                        start: activeSession.start, 
+                        end: code, 
+                        distance: dist 
+                    }), 
+                    mode: 'no-cors' 
+                });
                 alert("สำเร็จ! ระยะเพิ่ม: " + dist + " กม.");
                 activeSession = { start: code, bib: bib };
-                document.getElementById('scanStatus').innerText = "✅ บันทึกแล้ว! จุดเริ่มต่อไปคือ: " + pointNames[code];
+                document.getElementById('scanStatus').innerText = "✅ บันทึกแล้ว! เดินทางต่อสู่จุดถัดไป";
                 document.getElementById('btn' + code).style.display = 'none';
-            } catch(e) { alert("ขัดข้อง"); }
+            } catch(e) { alert("เกิดข้อผิดพลาดในการเชื่อมต่อ"); }
             showLoading(false);
         }
     }
 
     document.getElementById('regForm').onsubmit = async (e) => {
         e.preventDefault();
-        const bib = document.getElementById('regBib').value, name = document.getElementById('regName').value;
+        const bib = document.getElementById('regBib').value;
+        const name = document.getElementById('regName').value;
         showLoading(true);
         try {
-            await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'register', bib: bib, name: name, gender: document.getElementById('regGender').value }), mode: 'no-cors' });
+            await fetch(SCRIPT_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ 
+                    action: 'register', 
+                    bib: bib, 
+                    name: name, 
+                    gender: document.getElementById('regGender').value 
+                }), 
+                mode: 'no-cors' 
+            });
             localRunners[bib] = { name: name };
             localStorage.setItem('runners_local', JSON.stringify(localRunners));
             document.getElementById('scanBib').value = bib;
             alert("ลงทะเบียนสำเร็จ!");
-        } catch(e) {}
+        } catch(e) { alert("ลงทะเบียนไม่สำเร็จ"); }
         showLoading(false);
     };
 
+    async function fetchDataFromCloud() {
+        showLoading(true);
+        const tbody = document.getElementById('top10Body');
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center">กำลังโหลดข้อมูล...</td></tr>';
+        try {
+            const res = await fetch(SCRIPT_URL);
+            const rows = await res.json();
+            let summary = {};
+            rows.slice(1).forEach(r => {
+                if(r[1] === 'RUN') {
+                    summary[r[2]] = (summary[r[2]] || 0) + parseFloat(r[5] || 0);
+                }
+            });
+            const sorted = Object.entries(summary).sort((a,b) => b[1] - a[1]).slice(0, 30);
+            if(sorted.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center">ยังไม่มีสถิติการวิ่ง</td></tr>';
+            } else {
+                tbody.innerHTML = sorted.map(([bib, d], i) => `
+                    <tr>
+                        <td>${i+1}</td>
+                        <td><span class="badge badge-bib">${bib}</span></td>
+                        <td class="text-end fw-bold text-primary">${d.toFixed(2)} กม.</td>
+                    </tr>`).join('');
+            }
+        } catch(e) { tbody.innerHTML = '<tr><td colspan="3" class="text-center text-danger">ขัดข้องในการโหลดข้อมูล</td></tr>'; }
+        showLoading(false);
     }
+
     function showLoading(s) { document.getElementById('loading').style.display = s ? 'flex' : 'none'; }
 </script>
 </body>
 </html>
+
 
 
 
