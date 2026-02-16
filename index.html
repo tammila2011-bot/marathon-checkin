@@ -100,20 +100,50 @@
     let allCameras = [];
     let currentCamIdx = 0;
 
-    async function startScanner() {
-        document.getElementById('scanStatus').innerText = "กำลังค้นหากล้อง...";
+    async function fetchDataFromCloud() {
+        showLoading(true);
+        const tbody = document.getElementById('top10Body');
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center">กำลังโหลดข้อมูล...</td></tr>';
         try {
-            allCameras = await Html5Qrcode.getCameras();
-            if (allCameras && allCameras.length > 0) {
-                currentCamIdx = allCameras.length - 1; // เลือกกล้องหลัง
-                launchCamera(allCameras[currentCamIdx].id);
-                document.getElementById('startScanBtn').style.display = 'none';
-                document.getElementById('stopScanBtn').style.display = 'block';
-                if(allCameras.length > 1) document.getElementById('switchBtn').style.display = 'block';
-            } else { alert("ไม่พบกล้อง"); }
-        } catch (err) { alert("❌ เข้าถึงกล้องไม่ได้: " + err); }
-    }
+            const res = await fetch(SCRIPT_URL);
+            const rows = await res.json();
+            let summary = {}; // เก็บระยะทาง: { bib: total_dist }
+            let names = {};   // เก็บชื่อ: { bib: name }
 
+            rows.slice(1).forEach(r => {
+                const bib = r[2];
+                const name = r[3]; // คอลัมน์ D คือชื่อ-นามสกุล
+                const type = r[1];
+                const dist = parseFloat(r[5] || 0);
+
+                // เก็บชื่อไว้ใช้อ้างอิง (เอาชื่อล่าสุดที่เจอ)
+                if(name && bib) names[bib] = name;
+
+                // รวมระยะทางเฉพาะรายการที่เป็น RUN
+                if(type === 'RUN' && bib) {
+                    summary[bib] = (summary[bib] || 0) + dist;
+                }
+            });
+
+            const sorted = Object.entries(summary).sort((a,b) => b[1] - a[1]).slice(0, 30);
+            
+            if(sorted.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center">ยังไม่มีสถิติการวิ่ง</td></tr>';
+            } else {
+                tbody.innerHTML = sorted.map(([bib, d], i) => `
+                    <tr>
+                        <td class="fw-bold text-muted">${i+1}</td>
+                        <td><span class="badge badge-bib">${bib}</span></td>
+                        <td><div class="fw-600">${names[bib] || 'ไม่ระบุชื่อ'}</div></td>
+                        <td class="text-end fw-bold text-primary">${d.toFixed(2)} กม.</td>
+                    </tr>`).join('');
+            }
+        } catch(e) { 
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">ขัดข้องในการโหลดข้อมูล</td></tr>'; 
+        }
+        showLoading(false);
+    }
+   
     function launchCamera(cameraId) {
         if (html5QrCode) {
             html5QrCode.clear();
@@ -256,6 +286,7 @@
 </script>
 </body>
 </html>
+
 
 
 
