@@ -100,6 +100,55 @@
 
     // ฟังก์ชันเริ่มกล้องแบบใหม่
     async function startScanner() {
+       // 1. เพิ่มฟังก์ชันสลับกล้อง (ใส่ต่อจาก startScanner)
+let currentCamIdx = 0;
+let allCameras = [];
+
+async function switchCamera() {
+    if (allCameras.length > 1) {
+        currentCamIdx = (currentCamIdx + 1) % allCameras.length;
+        if (html5QrCode) {
+            await html5QrCode.stop();
+            launchCamera(allCameras[currentCamIdx].id);
+        }
+    }
+}
+
+// 2. ปรับปรุง startScanner เล็กน้อยเพื่อให้เก็บรายชื่อกล้องไว้สลับ
+async function startScanner() {
+    document.getElementById('scanStatus').innerText = "กำลังค้นหากล้อง...";
+    try {
+        allCameras = await Html5Qrcode.getCameras();
+        if (allCameras && allCameras.length > 0) {
+            currentCamIdx = allCameras.length - 1; // เริ่มที่กล้องหลัง
+            launchCamera(allCameras[currentCamIdx].id);
+            
+            document.getElementById('startScanBtn').style.display = 'none';
+            document.getElementById('stopScanBtn').style.display = 'block';
+            if(allCameras.length > 1) document.getElementById('switchBtn').style.display = 'block';
+        } else { alert("ไม่พบกล้อง"); }
+    } catch (err) { alert("❌ เข้าถึงกล้องไม่ได้: " + err); }
+}
+
+// 3. แยกฟังก์ชันเปิดกล้องออกมาเพื่อให้เรียกซ้ำได้
+function launchCamera(cameraId) {
+    if (html5QrCode) html5QrCode.clear();
+    html5QrCode = new Html5Qrcode("reader");
+    html5QrCode.start(
+        cameraId, 
+        { fps: 10, qrbox: 250 },
+        (text) => {
+            try {
+                const url = new URL(text);
+                const p = url.searchParams.get("point");
+                if (p && pointNames[p]) { handleScannedPoint(p); stopScanner(); }
+            } catch(e) {}
+        },
+        () => {}
+    ).catch(err => {
+        document.getElementById('scanStatus').innerText = "กล้องตัวนี้มีปัญหา ลองกด 'สลับกล้อง'";
+    });
+}
         document.getElementById('scanStatus').innerText = "กำลังค้นหากล้อง...";
         try {
             const cameras = await Html5Qrcode.getCameras();
@@ -216,28 +265,12 @@
         showLoading(false);
     };
 
-    async function fetchDataFromCloud() {
-        showLoading(true);
-        const tbody = document.getElementById('top10Body');
-        tbody.innerHTML = 'กำลังโหลด...';
-        try {
-            const res = await fetch(SCRIPT_URL);
-            const rows = await res.json();
-            let summary = {};
-            rows.slice(1).forEach(r => {
-                if(r[1] === 'RUN') {
-                    summary[r[2]] = (summary[r[2]] || 0) + parseFloat(r[5] || 0);
-                }
-            });
-            const sorted = Object.entries(summary).sort((a,b) => b[1] - a[1]).slice(0, 30);
-            tbody.innerHTML = sorted.map(([bib, d], i) => `<tr><td>${i+1}</td><td><span class="badge badge-bib">${bib}</span></td><td>${d.toFixed(2)} กม.</td></tr>`).join('');
-        } catch(e) { tbody.innerHTML = 'ขัดข้อง'; }
-        showLoading(false);
     }
     function showLoading(s) { document.getElementById('loading').style.display = s ? 'flex' : 'none'; }
 </script>
 </body>
 </html>
+
 
 
 
