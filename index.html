@@ -84,7 +84,19 @@
                     <h5 class="fw-bold text-primary">🏆 สถิติระยะรวม</h5>
                     <button class="btn btn-sm btn-outline-primary" onclick="fetchDataFromCloud()">🔄 อัปเดต</button>
                 </div>
-                <div class="table-responsive"><table class="table align-middle"><tbody id="top10Body"></tbody></table></div>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr class="text-muted small">
+                                <th>ลำดับ</th>
+                                <th>BIB</th>
+                                <th>ชื่อ-นามสกุล</th>
+                                <th class="text-end">ระยะทางรวม</th>
+                            </tr>
+                        </thead>
+                        <tbody id="top10Body"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -95,11 +107,14 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxvZHGKjK55cOMrBYtrkBisTUVSLrKTnqvmn6wYhzkdvAxFlDcjB286H0fhWNiVtOTu/exec";
     const distances = { 'A':0, 'B':0.5, 'C':1.0, 'D':2.0, 'E':2.5, 'F':4.0 };
     const pointNames = { 'A':'ทิชเชอร์แค้มป์', 'B':'ตำมิละ', 'C':'วัดหลวง', 'D':'เสาพญานาค', 'E':'วัดหาดไคร้', 'F':'ปลาบึกสีทอง' };
-    let html5QrCode, activeSession = null;
+    
+    let html5QrCode;
+    let activeSession = null;
     let localRunners = JSON.parse(localStorage.getItem('runners_local')) || {};
     let allCameras = [];
     let currentCamIdx = 0;
 
+    // --- ฟังก์ชันดึงข้อมูลสถิติ (เวอร์ชันสมบูรณ์ ดึงชื่อด้วย) ---
     async function fetchDataFromCloud() {
         showLoading(true);
         const tbody = document.getElementById('top10Body');
@@ -107,19 +122,16 @@
         try {
             const res = await fetch(SCRIPT_URL);
             const rows = await res.json();
-            let summary = {}; // เก็บระยะทาง: { bib: total_dist }
-            let names = {};   // เก็บชื่อ: { bib: name }
+            let summary = {}; // { bib: total_dist }
+            let names = {};   // { bib: name }
 
             rows.slice(1).forEach(r => {
-                const bib = r[2];
-                const name = r[3]; // คอลัมน์ D คือชื่อ-นามสกุล
                 const type = r[1];
+                const bib = r[2];
+                const name = r[3]; // คอลัมน์ D
                 const dist = parseFloat(r[5] || 0);
 
-                // เก็บชื่อไว้ใช้อ้างอิง (เอาชื่อล่าสุดที่เจอ)
-                if(name && bib) names[bib] = name;
-
-                // รวมระยะทางเฉพาะรายการที่เป็น RUN
+                if(bib && name) names[bib] = name;
                 if(type === 'RUN' && bib) {
                     summary[bib] = (summary[bib] || 0) + dist;
                 }
@@ -143,11 +155,22 @@
         }
         showLoading(false);
     }
-   
+
+    // --- ระบบกล้องและการสแกน ---
+    async function startScanner() {
+        try {
+            allCameras = await Html5Qrcode.getCameras();
+            if (allCameras && allCameras.length > 0) {
+                document.getElementById('startScanBtn').style.display = 'none';
+                document.getElementById('stopScanBtn').style.display = 'block';
+                if(allCameras.length > 1) document.getElementById('switchBtn').style.display = 'block';
+                launchCamera(allCameras[currentCamIdx].id);
+            }
+        } catch(e) { alert("ไม่สามารถเข้าถึงกล้องได้"); }
+    }
+
     function launchCamera(cameraId) {
-        if (html5QrCode) {
-            html5QrCode.clear();
-        }
+        if (html5QrCode) { html5QrCode.clear(); }
         html5QrCode = new Html5Qrcode("reader");
         html5QrCode.start(
             cameraId, 
@@ -196,9 +219,11 @@
         document.getElementById('scanStatus').innerText = "📍 ตรวจพบ: " + pointNames[p];
     }
 
+    // --- บันทึกจุดเช็คอิน ---
     async function checkPoint(code) {
         const bib = document.getElementById('scanBib').value;
         if(!bib) return alert('ใส่เลข BIB ก่อนครับ');
+        
         if(!activeSession) {
             activeSession = { start: code, bib: bib };
             alert("บันทึกจุดเริ่มแล้ว! เดินไปจุดต่อไปได้เลย");
@@ -207,6 +232,7 @@
         } else {
             const dist = Math.abs(distances[code] - distances[activeSession.start]);
             if(dist === 0) return alert("คุณอยู่ที่จุดเดิมครับ");
+            
             showLoading(true);
             try {
                 await fetch(SCRIPT_URL, { 
@@ -222,7 +248,7 @@
                     mode: 'no-cors' 
                 });
                 alert("สำเร็จ! ระยะเพิ่ม: " + dist + " กม.");
-                activeSession = { start: code, bib: bib };
+                activeSession = { start: code, bib: bib }; // จุดจบกลายเป็นจุดเริ่มใหม่
                 document.getElementById('scanStatus').innerText = "✅ บันทึกแล้ว! เดินทางต่อสู่จุดถัดไป";
                 document.getElementById('btn' + code).style.display = 'none';
             } catch(e) { alert("เกิดข้อผิดพลาดในการเชื่อมต่อ"); }
@@ -230,6 +256,7 @@
         }
     }
 
+    // --- ฟอร์มลงทะเบียน ---
     document.getElementById('regForm').onsubmit = async (e) => {
         e.preventDefault();
         const bib = document.getElementById('regBib').value;
@@ -253,34 +280,6 @@
         } catch(e) { alert("ลงทะเบียนไม่สำเร็จ"); }
         showLoading(false);
     };
-
-    async function fetchDataFromCloud() {
-        showLoading(true);
-        const tbody = document.getElementById('top10Body');
-        tbody.innerHTML = '<tr><td colspan="3" class="text-center">กำลังโหลดข้อมูล...</td></tr>';
-        try {
-            const res = await fetch(SCRIPT_URL);
-            const rows = await res.json();
-            let summary = {};
-            rows.slice(1).forEach(r => {
-                if(r[1] === 'RUN') {
-                    summary[r[2]] = (summary[r[2]] || 0) + parseFloat(r[5] || 0);
-                }
-            });
-            const sorted = Object.entries(summary).sort((a,b) => b[1] - a[1]).slice(0, 30);
-            if(sorted.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" class="text-center">ยังไม่มีสถิติการวิ่ง</td></tr>';
-            } else {
-                tbody.innerHTML = sorted.map(([bib, d], i) => `
-                    <tr>
-                        <td>${i+1}</td>
-                        <td><span class="badge badge-bib">${bib}</span></td>
-                        <td class="text-end fw-bold text-primary">${d.toFixed(2)} กม.</td>
-                    </tr>`).join('');
-            }
-        } catch(e) { tbody.innerHTML = '<tr><td colspan="3" class="text-center text-danger">ขัดข้องในการโหลดข้อมูล</td></tr>'; }
-        showLoading(false);
-    }
 
     function showLoading(s) { document.getElementById('loading').style.display = s ? 'flex' : 'none'; }
 </script>
