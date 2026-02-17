@@ -3,21 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FREE RUN SUNNY 2026 - Show-off Edition</title>
+    <title>FREE RUN SUNNY 2026 - Pro Pro Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        :root { --primary: #6f42c1; --accent: #00d2ff; }
+        :root { --primary: #6f42c1; }
         body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); font-family: 'Prompt', sans-serif; min-height: 100vh; }
         .card { border: none; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
-        .nav-pills .nav-link { color: #666; border-radius: 50px; white-space: nowrap; font-size: 0.9rem; padding: 10px 15px; }
+        .nav-pills .nav-link { color: #666; border-radius: 50px; font-size: 0.9rem; padding: 10px 15px; }
         .nav-pills .nav-link.active { background: linear-gradient(45deg, #6f42c1, #8e44ad); box-shadow: 0 4px 15px rgba(111,66,193,0.3); }
         #reader { width: 100%; min-height: 300px; background: #000; border-radius: 20px; overflow: hidden; border: 4px solid #fff; }
-        .btn-checkpoint { height: 70px; font-size: 1rem; font-weight: 600; border-radius: 20px; display: none; }
+        .btn-checkpoint { height: 75px; font-size: 1.1rem; font-weight: 600; border-radius: 20px; display: none; }
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.85); display: none; justify-content: center; align-items: center; z-index: 9999; }
-        .medal-hero { font-size: 4rem; display: block; margin: 10px 0; }
-        .history-item { border-left: 4px solid var(--primary); margin-bottom: 10px; padding-left: 15px; background: #fff; border-radius: 10px; padding: 10px; }
+        .medal-icon { font-size: 1.5rem; }
     </style>
 </head>
 <body>
@@ -29,11 +28,11 @@
         <h2 class="fw-bold text-primary">FREE RUN SUNNY 2026 🏃‍♂️</h2>
     </div>
 
-    <ul class="nav nav-pills nav-fill mb-4 bg-white p-2 rounded-pill shadow-sm overflow-auto flex-nowrap" style="-webkit-overflow-scrolling: touch;">
-        <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-reg">1. ลงทะเบียน</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-run">2. สแกนจุด</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-stat" onclick="fetchDataFromCloud()">3. สถิติรวม</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-me">4. สถิติฉัน</button></li>
+    <ul class="nav nav-pills nav-fill mb-4 bg-white p-2 rounded-pill shadow-sm" id="pills-tab">
+        <li class="nav-item"><button class="nav-link active" id="btn-tab-reg" data-bs-toggle="pill" data-bs-target="#tab-reg">1. ลงทะเบียน</button></li>
+        <li class="nav-item"><button class="nav-link" id="btn-tab-run" data-bs-toggle="pill" data-bs-target="#tab-run">2. สแกนจุด</button></li>
+        <li class="nav-item"><button class="nav-link" id="btn-tab-stat" data-bs-toggle="pill" data-bs-target="#tab-stat" onclick="fetchDataFromCloud()">3. สถิติรวม</button></li>
+        <li class="nav-item"><button class="nav-link" id="btn-tab-me" data-bs-toggle="pill" data-bs-target="#tab-me">4. สถิติฉัน</button></li>
     </ul>
 
     <div class="tab-content">
@@ -43,38 +42,35 @@
                 <form id="regForm">
                     <div class="mb-3"><label class="form-label">เลข BIB</label><input type="text" id="regBib" class="form-control form-control-lg" placeholder="เช่น 303" required></div>
                     <div class="mb-3"><label class="form-label">ชื่อ-นามสกุล</label><input type="text" id="regName" class="form-control form-control-lg" placeholder="ใส่ชื่อภาษาไทย" required></div>
-                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow">บันทึกและเริ่มวิ่ง</button>
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold">บันทึกและไปสแกนจุดวิ่ง</button>
                 </form>
             </div>
         </div>
 
         <div class="tab-pane fade" id="tab-run">
             <div class="card p-4 mx-auto" style="max-width: 500px;">
-                <h5 class="text-center fw-bold mb-3">📍 เช็คอินจุดวิ่ง</h5>
+                <h5 class="text-center fw-bold mb-3">📍 บันทึกเช็คอิน</h5>
                 <input type="text" id="scanBib" class="form-control form-control-lg text-center mb-3 border-primary fw-bold" placeholder="เลข BIB">
                 <div id="reader" class="mb-3"></div>
                 <div class="d-grid gap-2 mb-3">
-                    <button id="startScanBtn" class="btn btn-dark py-2 rounded-pill" onclick="startScanner()">📸 เปิดกล้อง</button>
+                    <button id="startScanBtn" class="btn btn-dark py-2 rounded-pill" onclick="startScanner()">📸 เปิดกล้องสแกน QR</button>
                     <button id="stopScanBtn" class="btn btn-outline-danger py-2 rounded-pill" onclick="stopScanner()" style="display:none;">ปิดกล้อง</button>
                 </div>
                 <div id="scanStatus" class="alert alert-secondary text-center rounded-4 small">พร้อมสแกน...</div>
                 <div id="btnArea">
-                    <button id="btnA" class="btn btn-success btn-checkpoint w-100 mb-2" onclick="checkPoint('A')">บันทึกจุด A</button>
-                    <button id="btnB" class="btn btn-success btn-checkpoint w-100 mb-2" onclick="checkPoint('B')">บันทึกจุด B</button>
-                    <button id="btnC" class="btn btn-success btn-checkpoint w-100 mb-2" onclick="checkPoint('C')">บันทึกจุด C</button>
-                    <button id="btnD" class="btn btn-success btn-checkpoint w-100 mb-2" onclick="checkPoint('D')">บันทึกจุด D</button>
-                    <button id="btnE" class="btn btn-success btn-checkpoint w-100 mb-2" onclick="checkPoint('E')">บันทึกจุด E</button>
-                    <button id="btnF" class="btn btn-success btn-checkpoint w-100 mb-2" onclick="checkPoint('F')">บันทึกจุด F</button>
+                    <button id="btnA" class="btn btn-success btn-checkpoint w-100 mb-2" onclick="checkPoint('A')">เช็คอินจุด A</button>
+                    <button id="btnB" class="btn btn-success btn-checkpoint w-100 mb-2" onclick="checkPoint('B')">เช็คอินจุด B</button>
+                    <button id="btnC" class="btn btn-success btn-checkpoint w-100 mb-2" onclick="checkPoint('C')">เช็คอินจุด C</button>
+                    <button id="btnD" class="btn btn-success btn-checkpoint w-100 mb-2" onclick="checkPoint('D')">เช็คอินจุด D</button>
+                    <button id="btnE" class="btn btn-success btn-checkpoint w-100 mb-2" onclick="checkPoint('E')">เช็คอินจุด E</button>
+                    <button id="btnF" class="btn btn-success btn-checkpoint w-100 mb-2" onclick="checkPoint('F')">เช็คอินจุด F</button>
                 </div>
             </div>
         </div>
 
         <div class="tab-pane fade" id="tab-stat">
             <div class="card p-4">
-                <div class="row mb-3">
-                    <div class="col-8"><h5 class="fw-bold text-primary">🏆 Leaderboard</h5></div>
-                    <div class="col-4 text-end"><button class="btn btn-sm btn-outline-primary" onclick="fetchDataFromCloud()">🔄 อัปเดต</button></div>
-                </div>
+                <h5 class="fw-bold text-primary mb-3">🏆 อันดับนักวิ่ง</h5>
                 <input type="text" id="searchBox" class="form-control mb-3" placeholder="ค้นหาชื่อหรือ BIB..." onkeyup="filterTable()">
                 <div class="table-responsive">
                     <table class="table align-middle">
@@ -86,21 +82,17 @@
 
         <div class="tab-pane fade" id="tab-me">
             <div class="card p-4 mx-auto text-center" style="max-width: 500px;">
-                <h5 class="fw-bold mb-3">My Stats - สถิติของฉัน</h5>
-                <div class="input-group mb-4">
-                    <input type="text" id="myBibSearch" class="form-control text-center fw-bold" placeholder="ใส่เลข BIB ของคุณ">
+                <h5 class="fw-bold mb-3">ข้อมูลของฉัน</h5>
+                <div class="input-group mb-3">
+                    <input type="text" id="myBibSearch" class="form-control text-center fw-bold" placeholder="ใส่เลข BIB">
                     <button class="btn btn-primary" onclick="loadMyStats()">ดูข้อมูล</button>
                 </div>
-                
                 <div id="myResultArea" style="display:none;">
-                    <div class="bg-light p-3 rounded-4 mb-3 border">
-                        <h4 id="myNameDisplay" class="fw-bold text-primary mb-1">-</h4>
-                        <div class="text-muted mb-2">BIB: <span id="myBibDisplay">-</span></div>
-                        <div id="myMedalDisplay" class="medal-hero">🏃‍♂️</div>
-                        <div class="h3 fw-bold mb-0 text-dark"><span id="myDistDisplay">0.00</span> กม.</div>
+                    <div class="bg-light p-3 rounded-4 mb-3">
+                        <h4 id="myNameDisplay" class="fw-bold text-primary">-</h4>
+                        <div id="myMedalDisplay" style="font-size:3rem;">🏃‍♂️</div>
+                        <div class="h3 fw-bold"><span id="myDistDisplay">0.00</span> กม.</div>
                     </div>
-                    
-                    <h6 class="text-start fw-bold mb-3">📜 ประวัติการวิ่ง</h6>
                     <div id="myHistoryList" class="text-start"></div>
                 </div>
             </div>
@@ -114,6 +106,7 @@
     const pointNames = { 'A':'ทิชเชอร์แค้มป์', 'B':'ตำมิละ', 'C':'วัดหลวง', 'D':'เสาพญานาค', 'E':'วัดหาดไคร้', 'F':'ปลาบึกสีทอง' };
     
     let html5QrCode;
+    let activeSession = null;
     let localRunners = JSON.parse(localStorage.getItem('runners_local')) || {};
 
     function speak(t) {
@@ -126,91 +119,48 @@
         if (d >= 100) return '🥇'; if (d >= 50) return '🥈'; if (d >= 20) return '🥉'; return '🏃‍♂️';
     }
 
-    // --- ระบบ Tab 4: ดูข้อมูลส่วนตัว ---
-    async function loadMyStats() {
-        const bib = document.getElementById('myBibSearch').value;
-        if(!bib) return alert('ใส่เลข BIB ก่อนครับ');
-        
+    // --- ✍️ ลงทะเบียน (ฉบับแก้ไข: ลงเสร็จแล้วไปหน้าสแกนทันที) ---
+    document.getElementById('regForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const bib = document.getElementById('regBib').value;
+        const name = document.getElementById('regName').value;
         showLoading(true);
         try {
-            const res = await fetch(SCRIPT_URL);
-            const rows = await res.json();
-            let totalDist = 0;
-            let name = "นักวิ่ง";
-            let history = [];
-
-            rows.slice(1).forEach(r => {
-                if(r[2] == bib) {
-                    name = r[3];
-                    if(r[1] === 'RUN') {
-                        totalDist += parseFloat(r[5] || 0);
-                        history.unshift({ start: r[4], end: r[7], dist: r[5], time: r[0] });
-                    }
-                }
-            });
-
-            // แสดงผล
-            document.getElementById('myNameDisplay').innerText = name;
-            document.getElementById('myBibDisplay').innerText = bib;
-            document.getElementById('myDistDisplay').innerText = totalDist.toFixed(2);
-            document.getElementById('myMedalDisplay').innerText = getMedal(totalDist);
+            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'register', bib: bib, name: name })});
+            localRunners[bib] = { name: name };
+            localStorage.setItem('runners_local', JSON.stringify(localRunners));
             
-            let hHtml = history.map(h => `
-                <div class="history-item">
-                    <div class="d-flex justify-content-between fw-bold small">
-                        <span>จาก ${h.start} ไป ${h.end}</span>
-                        <span class="text-primary">+${h.dist} กม.</span>
-                    </div>
-                    <div style="font-size: 0.75rem" class="text-muted">เมื่อ: ${new Date(h.time).toLocaleString('th-TH')}</div>
-                </div>
-            `).join('');
+            // ใส่เลข BIB ในช่องสแกนรอเลย
+            document.getElementById('scanBib').value = bib;
             
-            document.getElementById('myHistoryList').innerHTML = hHtml || '<div class="text-center text-muted">ยังไม่มีประวัติการวิ่ง</div>';
-            document.getElementById('myResultArea').style.display = 'block';
-            speak("ดึงข้อมูลของคุณ " + name + " เรียบร้อยแล้วค่ะ");
-        } catch(e) { alert("โหลดข้อมูลไม่สำเร็จ"); }
+            // พูด
+            speak("ลงทะเบียนสำเร็จค่ะคุณ " + name + " เริ่มสแกนจุดวิ่งได้เลยค่ะ");
+            
+            // **ส่วนที่เพิ่ม: สั่งสลับ Tab ไปหน้าสแกน (Tab ที่ 2)**
+            const triggerEl = document.querySelector('#btn-tab-run');
+            bootstrap.Tab.getOrCreateInstance(triggerEl).show();
+
+        } catch(e) { alert("ลงทะเบียนไม่สำเร็จ"); }
         showLoading(false);
-    }
+    };
 
-    // --- ฟังก์ชันเดิม (รวมไว้ให้ครบ) ---
-    async function fetchDataFromCloud() {
-        showLoading(true);
-        const tbody = document.getElementById('top10Body');
-        try {
-            const res = await fetch(SCRIPT_URL);
-            const rows = await res.json();
-            let summary = {}, names = {};
-            rows.slice(1).forEach(r => {
-                const bib = r[2], name = r[3], dist = parseFloat(r[5] || 0);
-                if(bib && name) names[bib] = name;
-                if(r[1] === 'RUN' && bib) summary[bib] = (summary[bib] || 0) + dist;
-            });
-            const sorted = Object.entries(summary).sort((a,b) => b[1] - a[1]);
-            tbody.innerHTML = sorted.map(([bib, d], i) => `
-                <tr><td>${i+1}</td><td><span class="badge bg-dark">${bib}</span></td>
-                <td>${names[bib]}</td><td>${getMedal(d)}</td><td class="text-end fw-bold">${d.toFixed(2)}</td></tr>
-            `).join('');
-        } catch(e) {}
-        showLoading(false);
-    }
-
-    function filterTable() {
-        let input = document.getElementById("searchBox").value.toLowerCase();
-        let rows = document.getElementById("top10Body").getElementsByTagName("tr");
-        for (let row of rows) row.style.display = row.innerText.toLowerCase().includes(input) ? "" : "none";
-    }
-
+    // --- 📸 ระบบกล้อง (เวอร์ชันเสถียร) ---
     async function startScanner() {
-        const cams = await Html5Qrcode.getCameras();
-        if (cams.length > 0) {
-            document.getElementById('startScanBtn').style.display = 'none';
-            document.getElementById('stopScanBtn').style.display = 'block';
-            html5QrCode = new Html5Qrcode("reader");
-            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
-                const p = new URL(text).searchParams.get("point");
-                if (p && pointNames[p]) { handleScannedPoint(p); stopScanner(); }
-            });
-        }
+        try {
+            const cams = await Html5Qrcode.getCameras();
+            if (cams.length > 0) {
+                document.getElementById('startScanBtn').style.display = 'none';
+                document.getElementById('stopScanBtn').style.display = 'block';
+                html5QrCode = new Html5Qrcode("reader");
+                const camId = cams[cams.length - 1].id; // ใช้กล้องหลัง
+                await html5QrCode.start(camId, { fps: 10, qrbox: 250 }, (text) => {
+                    try {
+                        const p = new URL(text).searchParams.get("point");
+                        if (p && pointNames[p]) { handleScannedPoint(p); stopScanner(); }
+                    } catch(e) {}
+                });
+            }
+        } catch(e) { alert("เปิดกล้องไม่ได้: " + e); }
     }
 
     function stopScanner() {
@@ -229,11 +179,13 @@
 
     async function checkPoint(code) {
         const bib = document.getElementById('scanBib').value;
-        const name = localRunners[bib]?.name || 'นักวิ่ง';
         if(!bib) return alert('ใส่ BIB ก่อนครับ');
+        const name = localRunners[bib]?.name || 'นักวิ่ง';
+        
         if(!activeSession) {
             activeSession = { start: code, bib: bib };
-            speak("บันทึกจุดเริ่มให้คุณ " + name); alert("เริ่มที่จุด " + code);
+            speak("บันทึกจุดเริ่มต้นให้ " + name + " แล้วค่ะ");
+            alert("บันทึกจุดเริ่มแล้ว!");
         } else {
             const dist = Math.abs(distances[code] - distances[activeSession.start]);
             if(dist === 0) return alert("จุดเดิมครับ");
@@ -241,31 +193,71 @@
             try {
                 await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'record', bib: bib, name: name, start: activeSession.start, end: code, distance: dist })});
                 speak("ยินดีด้วยค่ะคุณ " + name + " ระยะเพิ่ม " + dist + " กิโลเมตร");
-                activeSession = { start: code, bib: bib };
+                activeSession = { start: code, bib: bib }; // ต่อเนื่องได้เลย
+                alert("เช็คอินสำเร็จ!");
             } catch(e) {}
             showLoading(false);
         }
     }
 
-    document.getElementById('regForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const bib = document.getElementById('regBib').value, name = document.getElementById('regName').value;
+    // --- ฟังก์ชันเสริม (สถิติรวม/ส่วนตัว) ---
+    async function fetchDataFromCloud() {
         showLoading(true);
+        const tbody = document.getElementById('top10Body');
         try {
-            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'register', bib: bib, name: name })});
-            localRunners[bib] = { name: name };
-            localStorage.setItem('runners_local', JSON.stringify(localRunners));
-            document.getElementById('scanBib').value = bib;
-            speak("ลงทะเบียนสำเร็จค่ะคุณ " + name);
+            const res = await fetch(SCRIPT_URL);
+            const rows = await res.json();
+            let summary = {}, names = {};
+            rows.slice(1).forEach(r => {
+                const bib = r[2], name = r[3], d = parseFloat(r[5] || 0);
+                if(bib && name) names[bib] = name;
+                if(r[1] === 'RUN') summary[bib] = (summary[bib] || 0) + d;
+            });
+            const sorted = Object.entries(summary).sort((a,b) => b[1] - a[1]);
+            tbody.innerHTML = sorted.map(([bib, d], i) => `<tr><td>${i+1}</td><td><span class="badge bg-dark">${bib}</span></td><td>${names[bib]}</td><td>${getMedal(d)}</td><td class="text-end fw-bold">${d.toFixed(2)}</td></tr>`).join('');
         } catch(e) {}
         showLoading(false);
-    };
+    }
+
+    async function loadMyStats() {
+        const bib = document.getElementById('myBibSearch').value;
+        if(!bib) return;
+        showLoading(true);
+        try {
+            const res = await fetch(SCRIPT_URL);
+            const rows = await res.json();
+            let total = 0, name = "นักวิ่ง", hist = [];
+            rows.slice(1).forEach(r => {
+                if(r[2] == bib) {
+                    name = r[3];
+                    if(r[1] === 'RUN') {
+                        total += parseFloat(r[5] || 0);
+                        hist.unshift(`<div class="small border-bottom py-1">${r[4]} → ${r[7]} (+${r[5]} กม.)</div>`);
+                    }
+                }
+            });
+            document.getElementById('myNameDisplay').innerText = name;
+            document.getElementById('myDistDisplay').innerText = total.toFixed(2);
+            document.getElementById('myMedalDisplay').innerText = getMedal(total);
+            document.getElementById('myHistoryList').innerHTML = hist.join('') || "ไม่มีข้อมูล";
+            document.getElementById('myResultArea').style.display = 'block';
+        } catch(e) {}
+        showLoading(false);
+    }
+
+    function filterTable() {
+        let input = document.getElementById("searchBox").value.toLowerCase();
+        let rows = document.getElementById("top10Body").getElementsByTagName("tr");
+        for (let row of rows) row.style.display = row.innerText.toLowerCase().includes(input) ? "" : "none";
+    }
 
     function showLoading(s) { document.getElementById('loading').style.display = s ? 'flex' : 'none'; }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
    
+
 
 
 
