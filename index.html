@@ -201,16 +201,33 @@
         try {
             const res = await fetch(SCRIPT_URL);
             const rows = await res.json();
-            let total = 0, name = "นักวิ่ง", hist = [];
+            let total = 0, name = "นักวิ่ง", histHtml = [];
+            
             rows.slice(1).forEach(r => {
                 if(r[2] == bib) {
                     name = r[3];
                     if(r[1] === 'RUN') {
-                        total += parseFloat(r[5] || 0);
-                        hist.unshift(`<div class="p-2 border-bottom small">${r[4]} ➔ ${r[7]} (+${r[5]} กม.)</div>`);
+                        const d = parseFloat(r[5] || 0);
+                        total += d;
+                        
+                        // --- ส่วนที่ดึง วัน/เวลา กลับมาแสดงผล ---
+                        const dateObj = new Date(r[0]);
+                        const dateStr = dateObj.toLocaleDateString('th-TH', { day:'numeric', month:'short' });
+                        const timeStr = dateObj.toLocaleTimeString('th-TH', { hour:'2-digit', minute:'2-digit' });
+                        
+                        histHtml.unshift(`
+                            <div class="p-2 border-bottom d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge bg-light text-dark" style="font-size: 0.7rem;">${dateStr} | ${timeStr}</span><br>
+                                    <small class="text-muted">${r[4]} ➔ ${r[7]}</small>
+                                </div>
+                                <div class="fw-bold text-success">+${d.toFixed(2)} กม.</div>
+                            </div>
+                        `);
                     }
                 }
             });
+            
             const info = getLevelInfo(total);
             document.getElementById('myNameDisplay').innerText = name;
             document.getElementById('myDistDisplay').innerText = total.toFixed(2);
@@ -218,13 +235,17 @@
             document.getElementById('myLevelBadge').innerText = info.title;
             document.getElementById('myLevelBadge').className = 'level-badge ' + info.class;
             document.getElementById('myProgressBar').style.width = Math.min(total, 100) + '%';
-            document.getElementById('myHistoryList').innerHTML = hist.join('') || "ไม่มีข้อมูล";
+            
+            // แสดงรายการประวัติพร้อมวันเวลา
+            document.getElementById('myHistoryList').innerHTML = `<h6 class="fw-bold mt-3 px-2">ประวัติเวลาสะสม:</h6>` + (histHtml.join('') || "ไม่มีข้อมูล");
+            
             document.getElementById('certButtonArea').style.display = total >= 20 ? 'block' : 'none';
             document.getElementById('myResultArea').style.display = 'block';
-            speak("สวัสดีค่ะคุณ " + name + " ตอนนี้คุณคือ " + info.title);
-        } catch(e) {}
+            speak("ดึงข้อมูลสำเร็จแล้วค่ะคุณ " + name);
+        } catch(e) { console.error(e); }
         showLoading(false);
     }
+   
 
     function showCertificate() {
         document.getElementById('certName').innerText = document.getElementById('myNameDisplay').innerText;
@@ -304,6 +325,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
 
 
 
