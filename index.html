@@ -295,9 +295,9 @@
         speak("พบจุดเช็คอิน " + pointNames[p]);
     }
 
-    async function checkPoint(code) {
+  async function checkPoint(code) {
         const bib = document.getElementById('scanBib').value;
-        if(!bib) return alert('ใส่ BIB ก่อนครับ');
+        if(!bib) return alert('กรุณาใส่เลข BIB ก่อนครับ');
         const name = localRunners[bib]?.name || 'นักวิ่ง';
         
         // เช็คเลเวลเพื่อเปลี่ยนเสียงพูด
@@ -305,15 +305,53 @@
         const info = getLevelInfo(currentDist);
 
         if(!activeSession) {
-            activeSession = { start: code, bib: bib };
-            speak(info.greet + " บันทึกจุดเริ่มให้แล้วค่ะ");
+            // บันทึกจุดเริ่มต้น และเก็บเวลาเริ่มต้นไว้ในเครื่อง (ISO String)
+            activeSession = { 
+                start: code, 
+                bib: bib, 
+                startTime: new Date().toISOString() 
+            };
+            speak(info.greet + " บันทึกจุดเริ่มที่ " + pointNames[code] + " ให้แล้วค่ะ");
+            document.getElementById('scanStatus').innerText = "📍 กำลังวิ่งจาก: " + pointNames[code];
         } else {
             const dist = Math.abs(distances[code] - distances[activeSession.start]);
-            if(dist === 0) return;
-            async function loadMyStats() {
-        const bib = document.getElementById('myBibSearch').value;
-        if(!bib) return;
-        showLoading(true);
+            if(dist === 0) return alert("คุณอยู่ที่จุดเดิมครับ");
+            
+            showLoading(true);
+            try {
+                // ส่งข้อมูลไป Google Sheets (เพิ่มฟิลด์ startTime เพื่อบันทึกลงคอลัมน์ที่ 7)
+                const payload = { 
+                    action: 'record', 
+                    bib: bib, 
+                    name: name, 
+                    start: activeSession.start, 
+                    end: code, 
+                    distance: dist,
+                    startTime: activeSession.startTime // ส่งเวลาเริ่มไปด้วย
+                };
+
+                await fetch(SCRIPT_URL, { 
+                    method: 'POST', 
+                    mode: 'no-cors', 
+                    body: JSON.stringify(payload) 
+                });
+
+                speak("ยอดเยี่ยมมากค่ะคุณ " + name + " ถึงจุด " + pointNames[code] + " ระยะทางเพิ่มขึ้น " + dist + " กิโลเมตร");
+                
+                // เซ็ตจุดปัจจุบันให้เป็นจุดเริ่มต้นของรอบต่อไปทันที
+                activeSession = { 
+                    start: code, 
+                    bib: bib, 
+                    startTime: new Date().toISOString() 
+                };
+                document.getElementById('scanStatus').innerText = "📍 จุดล่าสุด: " + pointNames[code];
+                
+            } catch(e) {
+                alert("เกิดข้อผิดพลาดในการบันทึก: " + e);
+            }
+            showLoading(false);
+        }
+    }
         try {
             const res = await fetch(SCRIPT_URL);
             const rows = await res.json();
@@ -385,6 +423,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
 
 
 
