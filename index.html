@@ -141,10 +141,10 @@
     function speak(t) { if ('speechSynthesis' in window) { const m = new SpeechSynthesisUtterance(t); m.lang = 'th-TH'; window.speechSynthesis.speak(m); } }
     
     function getLevelInfo(d) {
-        if (d >= 100) return { title: 'จอมอึดแห่งซันนี่', class: 'lvl-legend', medal: '🥇', greet: 'ยินดีต้อนรับท่านจอมอึด' };
-        if (d >= 50) return { title: 'นักล่าระยะ', class: 'lvl-hunter', medal: '🥈', greet: 'ยินดีต้อนรับท่านนักล่า' };
-        if (d >= 20) return { title: 'นักวิ่งขาแรง', class: 'lvl-hunter', medal: '🥉', greet: 'สแกนสำเร็จแล้วค่ะ' };
-        return { title: 'นักวิ่งมือใหม่', class: 'lvl-newbie', medal: '🏃‍♂️', greet: 'สแกนสำเร็จแล้วค่ะ' };
+        if (d >= 100) return { title: 'จอมอึดแห่งซันนี่', class: 'lvl-legend', medal: '🥇', greet: 'โอ้โห! ท่านจอมอึดมาแล้ว! พลังเหลือล้นจริงๆ ค่ะ', cheer: 'สุดยอดไปเลยค่ะ อีกนิดเดียวจะทะลุร้อยแล้วนะ!' };
+        if (d >= 50) return { title: 'นักล่าระยะ', class: 'lvl-hunter', medal: '🥈', greet: 'ยินดีต้อนรับท่านนักล่า! ฝีเท้าไม่ธรรมดาเลยนะคะ', cheer: 'ขาแรงจริงๆ ค่ะ รักษาระดับไว้นะคะ!' };
+        if (d >= 20) return { title: 'นักวิ่งขาแรง', class: 'lvl-hunter', medal: '🥉', greet: 'สแกนสำเร็จค่ะคุณนักวิ่งขาแรง สู้ๆ นะคะ', cheer: 'เหรียญทองแดงอยู่ในมือแล้ว ไปต่อให้ถึงเหรียญเงินกันเถอะ!' };
+        return { title: 'นักวิ่งมือใหม่', class: 'lvl-newbie', medal: '🏃‍♂️', greet: 'สแกนสำเร็จแล้วค่ะ ยินดีที่ได้พบกันนะคะ', cheer: 'ก้าวเล็กๆ รวมกันเป็นก้าวที่ยิ่งใหญ่ สู้ๆ ค่ะ!' };
     }
 
     async function fetchDataFromCloud() {
@@ -200,7 +200,7 @@
                     histHtml.unshift(`
                         <div class="card mb-2 border-0 shadow-sm p-3" style="border-radius:15px; background: #fff;">
                             <div class="d-flex justify-content-between mb-1">
-                                <span class="badge bg-primary-subtle text-primary">${endTime.toLocaleDateString('th-TH')} | ${endTime.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'})}</span>
+                                <span class="badge bg-primary-subtle text-primary">${endTime.toLocaleDateString('th-TH')} | ${endTime.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'})} น.</span>
                                 <span class="fw-bold text-success">+${dist.toFixed(2)} กม.</span>
                             </div>
                             <div class="row g-0 small text-muted">
@@ -221,9 +221,10 @@
             document.getElementById('myLevelBadge').innerText = info.title;
             document.getElementById('myLevelBadge').className = 'level-badge ' + info.class;
             document.getElementById('myProgressBar').style.width = Math.min(totalDist, 100) + '%';
-            document.getElementById('myHistoryList').innerHTML = `<h6 class="fw-bold mb-3">เจาะลึกการวิ่งของคุณ:</h6>` + (histHtml.join('') || "ไม่มีข้อมูล");
+            document.getElementById('myHistoryList').innerHTML = `<h6 class="fw-bold mb-3 px-2 text-primary">เจาะลึกการวิ่งของคุณ:</h6>` + (histHtml.join('') || "ไม่มีข้อมูล");
             document.getElementById('certButtonArea').style.display = totalDist >= 20 ? 'block' : 'none';
             document.getElementById('myResultArea').style.display = 'block';
+            speak("ดึงข้อมูลสำเร็จแล้วค่ะคุณ " + name + " วันนี้สถิติยอดเยี่ยมมากเลยค่ะ");
         } catch(e) { console.error(e); }
         showLoading(false);
     }
@@ -232,14 +233,19 @@
         const bib = document.getElementById('scanBib').value;
         if(!bib) return alert('ใส่ BIB ก่อนครับ');
         const name = localRunners[bib]?.name || 'นักวิ่ง';
+        const currentDist = parseFloat(document.getElementById('myDistDisplay').innerText || 0);
+        const info = getLevelInfo(currentDist);
         
         if(!activeSession) {
             activeSession = { start: code, bib: bib, startTime: new Date().toISOString() };
-            speak("บันทึกจุดเริ่มที่ " + pointNames[code]);
+            speak(info.greet + " บันทึกจุดเริ่มที่ " + pointNames[code] + " ให้แล้วค่ะ สู้ๆ นะคะ");
             document.getElementById('scanStatus').innerText = "📍 เริ่มจาก: " + pointNames[code];
         } else {
             const dist = Math.abs(distances[code] - distances[activeSession.start]);
-            if(dist === 0) return alert("จุดเดิมครับ");
+            if(dist === 0) {
+                speak("คุณอยู่ที่จุดเดิมค่ะ ลองวิ่งไปจุดถัดไปดูนะคะ เป็นกำลังใจให้ค่ะ");
+                return alert("จุดเดิมครับ");
+            }
             showLoading(true);
             try {
                 await fetch(SCRIPT_URL, { 
@@ -247,7 +253,7 @@
                     mode: 'no-cors', 
                     body: JSON.stringify({ action: 'record', bib: bib, name: name, start: activeSession.start, end: code, distance: dist, startTime: activeSession.startTime }) 
                 });
-                speak("ถึงจุด " + pointNames[code] + " ระยะทาง +" + dist + " กม.");
+                speak(`ยอดเยี่ยมมากค่ะคุณ ${name} ! ถึงจุด ${pointNames[code]} แล้ว ระยะทางเพิ่มขึ้น ${dist} กิโลเมตร ${info.cheer}`);
                 activeSession = { start: code, bib: bib, startTime: new Date().toISOString() };
                 document.getElementById('scanStatus').innerText = "📍 ล่าสุด: " + pointNames[code];
             } catch(e) { alert("Error: " + e); }
@@ -264,6 +270,7 @@
             localRunners[bib] = { name: name };
             localStorage.setItem('runners_local', JSON.stringify(localRunners));
             document.getElementById('scanBib').value = bib;
+            speak(`ลงทะเบียนเรียบร้อยแล้วค่ะ ยินดีต้อนรับคุณ ${name} เข้าสู่ครอบครัวซันนี่รันเนอร์นะคะ วันนี้ขอให้เป็นวันที่วิ่งสนุกและมีความสุขค่ะ ไปเริ่มสแกนจุดแรกกันเลย!`);
             bootstrap.Tab.getOrCreateInstance(document.querySelector('#btn-tab-run')).show();
         } catch(e) {}
         showLoading(false);
@@ -286,6 +293,7 @@
         document.querySelectorAll('.btn-checkpoint').forEach(b => b.style.display = 'none');
         document.getElementById('btn' + p).style.display = 'block';
         document.getElementById('scanStatus').innerText = "📍 พบจุด: " + pointNames[p];
+        speak("พบจุดเช็คอิน " + pointNames[p]);
     }
     function showCertificate() {
         document.getElementById('certName').innerText = document.getElementById('myNameDisplay').innerText;
