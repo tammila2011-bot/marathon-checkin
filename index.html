@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FREE RUN SUNNY 2026 - Official Edition</title>
+    <title>FREE RUN SUNNY 2026 - Official Edition (Fixed)</title>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -47,11 +47,11 @@
     <div class="tab-content">
         <div class="tab-pane fade show active" id="tab-reg">
             <div class="card p-4 mx-auto" style="max-width: 450px;">
-                <h5 class="mb-4 fw-bold text-center text-primary">ยินดีต้อนรับนักวิ่งใหม่</h5>
+                <h5 class="mb-4 fw-bold text-center text-primary">ลงทะเบียนนักวิ่งใหม่</h5>
                 <form id="regForm">
                     <div class="mb-3"><label class="form-label">เลข BIB</label><input type="text" id="regBib" class="form-control form-control-lg" required></div>
                     <div class="mb-3"><label class="form-label">ชื่อ-นามสกุล</label><input type="text" id="regName" class="form-control form-control-lg" required></div>
-                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow">บันทึกและเริ่มสะสมระยะ</button>
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow">เริ่มสะสมระยะ</button>
                 </form>
             </div>
         </div>
@@ -132,7 +132,9 @@
 </div>
 
 <script>
+    // --- เปลี่ยน URL ของอาจารย์ตรงนี้ ---
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzV5xFLAGoB0M1aV_AGkkOKnPDbUcyuEUhyxi0AYmSvyePLgp-tT1sefaUGI_nDlyqr/exec";
+    
     const distances = { 'A':0, 'B':0.5, 'C':1.0, 'D':2.0, 'E':2.5, 'F':4.0 };
     const pointNames = { 'A':'ทิชเชอร์แค้มป์', 'B':'ตำมิละ', 'C':'วัดหลวง', 'D':'เสาพญานาค', 'E':'วัดหาดไคร้', 'F':'ปลาบึกสีทอง' };
     
@@ -141,10 +143,10 @@
     function speak(t) { if ('speechSynthesis' in window) { const m = new SpeechSynthesisUtterance(t); m.lang = 'th-TH'; window.speechSynthesis.speak(m); } }
     
     function getLevelInfo(d) {
-        if (d >= 100) return { title: 'จอมอึดแห่งซันนี่', class: 'lvl-legend', medal: '🥇', greet: 'ท่านจอมอึดมาแล้ว พลังเหลือล้นจริงๆ ค่ะ', cheer: 'สุดยอดไปเลยค่ะ อีกนิดเดียวจะทะลุร้อยแล้วนะ!' };
+        if (d >= 100) return { title: 'จอมอึดแห่งซันนี่', class: 'lvl-legend', medal: '🥇', greet: 'ท่านจอมอึดมาแล้ว!', cheer: 'สุดยอดไปเลยค่ะ อีกนิดเดียวจะทะลุร้อยแล้วนะ!' };
         if (d >= 50) return { title: 'นักล่าระยะ', class: 'lvl-hunter', medal: '🥈', greet: 'ท่านนักล่าฝีเท้าไม่ธรรมดาเลยนะคะ', cheer: 'ขาแรงจริงๆ ค่ะ รักษาระดับไว้นะคะ!' };
-        if (d >= 20) return { title: 'นักวิ่งขาแรง', class: 'lvl-hunter', medal: '🥉', greet: 'คุณนักวิ่งขาแรง สู้ๆ นะคะ', cheer: 'เหรียญทองแดงอยู่ในมือแล้ว ไปต่อให้ถึงเหรียญเงินกันเถอะ!' };
-        return { title: 'นักวิ่งมือใหม่', class: 'lvl-newbie', medal: '🏃‍♂️', greet: 'ยินดีที่ได้พบกันนะคะ', cheer: 'ก้าวเล็กๆ รวมกันเป็นก้าวที่ยิ่งใหญ่ สู้ๆ ค่ะ!' };
+        if (d >= 20) return { title: 'นักวิ่งขาแรง', class: 'lvl-hunter', medal: '🥉', greet: 'คุณนักวิ่งขาแรง สู้ๆ นะคะ', cheer: 'ไปต่อให้ถึงเหรียญเงินกันเถอะ!' };
+        return { title: 'นักวิ่งมือใหม่', class: 'lvl-newbie', medal: '🏃‍♂️', greet: 'ยินดีที่ได้พบกันนะคะ', cheer: 'ก้าวเล็กๆ รวมกันเป็นก้าวที่ยิ่งใหญ่ค่ะ!' };
     }
 
     async function fetchDataFromCloud() {
@@ -154,7 +156,7 @@
             const rows = await res.json();
             let summary = {}, names = {}, grandTotal = 0;
             rows.slice(1).forEach(r => {
-                const bib = r[2], name = r[3], d = parseFloat(r[5] || 0);
+                const bib = String(r[2]).trim(), name = r[3], d = parseFloat(r[5] || 0);
                 if(bib && name) names[bib] = name;
                 if(r[1] === 'RUN') {
                     summary[bib] = (summary[bib] || 0) + d;
@@ -171,72 +173,76 @@
         showLoading(false);
     }
 
+    // --- แก้ไขจุดค้นหาสถิติ (Fix BIB LA4366) ---
     async function loadMyStats() {
-        const bib = document.getElementById('myBibSearch').value;
-        if(!bib) return;
+        const inputBib = document.getElementById('myBibSearch').value.trim();
+        if(!inputBib) return;
         showLoading(true);
         try {
             const res = await fetch(SCRIPT_URL);
             const rows = await res.json();
             let totalDist = 0, name = "นักวิ่ง", histHtml = [];
             
-            const myRows = rows.slice(1).filter(r => r[2] == bib);
-            if(myRows.length > 0) name = myRows[0][3];
-
-            myRows.forEach(r => {
-                if(r[1] === 'RUN') {
-                    const dist = parseFloat(r[5] || 0);
-                    totalDist += dist;
-                    const startTime = new Date(r[6]);
-                    const endTime = new Date(r[0]);
-                    const diffMin = (endTime - startTime) / 1000 / 60;
-                    let paceStr = "N/A";
-                    if(dist > 0 && diffMin > 0) {
-                        const paceDec = diffMin / dist;
-                        paceStr = `${Math.floor(paceDec)}:${Math.round((paceDec % 1) * 60).toString().padStart(2, '0')}`;
+            // เปรียบเทียบแบบแปลงเป็น String และลบช่องว่าง
+            const myRows = rows.slice(1).filter(r => String(r[2]).trim() === String(inputBib));
+            
+            if(myRows.length > 0) {
+                name = myRows[0][3];
+                myRows.forEach(r => {
+                    if(r[1] === 'RUN') {
+                        const dist = parseFloat(r[5] || 0);
+                        totalDist += dist;
+                        const startTime = new Date(r[6]);
+                        const endTime = new Date(r[0]);
+                        const diffMin = (endTime - startTime) / 1000 / 60;
+                        let paceStr = "N/A";
+                        if(dist > 0 && diffMin > 0) {
+                            const paceDec = diffMin / dist;
+                            paceStr = `${Math.floor(paceDec)}:${Math.round((paceDec % 1) * 60).toString().padStart(2, '0')}`;
+                        }
+                        histHtml.unshift(`
+                            <div class="card mb-2 border-0 shadow-sm p-3" style="border-radius:15px;">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="badge bg-primary-subtle text-primary">${endTime.toLocaleDateString('th-TH')} | ${endTime.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'})} น.</span>
+                                    <span class="fw-bold text-success">+${dist.toFixed(2)} กม.</span>
+                                </div>
+                                <div class="row g-0 small text-muted">
+                                    <div class="col-6">📍 <b>เริ่ม:</b> ${pointNames[r[4]] || r[4]}</div>
+                                    <div class="col-6 text-end">🏁 <b>ถึง:</b> ${pointNames[r[7]] || r[7]}</div>
+                                    <div class="col-6 mt-1 text-danger">🏃‍♂️ <b>Pace:</b> ${paceStr}</div>
+                                </div>
+                            </div>
+                        `);
                     }
-                    histHtml.unshift(`
-                        <div class="card mb-2 border-0 shadow-sm p-3" style="border-radius:15px; background: #fff;">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="badge bg-primary-subtle text-primary">${endTime.toLocaleDateString('th-TH')} | ${endTime.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'})} น.</span>
-                                <span class="fw-bold text-success">+${dist.toFixed(2)} กม.</span>
-                            </div>
-                            <div class="row g-0 small text-muted">
-                                <div class="col-6">📍 <b>เริ่ม:</b> ${pointNames[r[4]] || r[4]}</div>
-                                <div class="col-6 text-end">🏁 <b>ถึง:</b> ${pointNames[r[7]] || r[7]}</div>
-                                <div class="col-6 mt-1">⏱️ <b>เวลา:</b> ${Math.floor(diffMin)} นาที</div>
-                                <div class="col-6 mt-1 text-end text-danger">🏃‍♂️ <b>Pace:</b> ${paceStr}</div>
-                            </div>
-                        </div>
-                    `);
-                }
-            });
+                });
 
-            const info = getLevelInfo(totalDist);
-            document.getElementById('myNameDisplay').innerText = name;
-            document.getElementById('myDistDisplay').innerText = totalDist.toFixed(2);
-            document.getElementById('myMedalDisplay').innerText = info.medal;
-            document.getElementById('myLevelBadge').innerText = info.title;
-            document.getElementById('myLevelBadge').className = 'level-badge ' + info.class;
-            document.getElementById('myProgressBar').style.width = Math.min(totalDist, 100) + '%';
-            document.getElementById('myHistoryList').innerHTML = `<h6 class="fw-bold mb-3 px-2 text-primary">เจาะลึกการวิ่งของคุณ:</h6>` + (histHtml.join('') || "ไม่มีข้อมูล");
-            document.getElementById('certButtonArea').style.display = totalDist >= 20 ? 'block' : 'none';
-            document.getElementById('myResultArea').style.display = 'block';
-            speak("ดึงข้อมูลสำเร็จแล้วค่ะคุณ " + name);
+                const info = getLevelInfo(totalDist);
+                document.getElementById('myNameDisplay').innerText = name;
+                document.getElementById('myDistDisplay').innerText = totalDist.toFixed(2);
+                document.getElementById('myMedalDisplay').innerText = info.medal;
+                document.getElementById('myLevelBadge').innerText = info.title;
+                document.getElementById('myLevelBadge').className = 'level-badge ' + info.class;
+                document.getElementById('myProgressBar').style.width = Math.min(totalDist, 100) + '%';
+                document.getElementById('myHistoryList').innerHTML = `<h6 class="fw-bold mb-3 px-2 text-primary">สถิติของคุณ:</h6>` + (histHtml.join(''));
+                document.getElementById('certButtonArea').style.display = totalDist >= 20 ? 'block' : 'none';
+                document.getElementById('myResultArea').style.display = 'block';
+                speak("ดึงข้อมูลสำเร็จแล้วค่ะคุณ " + name);
+            } else {
+                alert("ไม่พบข้อมูล BIB: " + inputBib);
+            }
         } catch(e) { console.error(e); }
         showLoading(false);
     }
 
     async function checkPoint(code) {
-        const bib = document.getElementById('scanBib').value;
+        const bib = document.getElementById('scanBib').value.trim();
         if(!bib) return alert('ใส่ BIB ก่อนครับ');
         const name = localRunners[bib]?.name || 'นักวิ่ง';
-        const currentDist = parseFloat(document.getElementById('myDistDisplay').innerText || 0);
-        const info = getLevelInfo(currentDist);
         
         if(!activeSession) {
             activeSession = { start: code, bib: bib, startTime: new Date().toISOString() };
-            speak("บันทึกจุดเริ่มที่ " + pointNames[code] + " ให้แล้วค่ะ " + info.greet + " สู้ๆ นะคะ");
+            // พูดทันทีไม่ต้องรอเน็ต
+            speak("บันทึกจุดเริ่มที่ " + pointNames[code] + " ให้แล้วค่ะ สู้ๆ นะคะ");
             document.getElementById('scanStatus').innerText = "📍 เริ่มจาก: " + pointNames[code];
         } else {
             const dist = Math.abs(distances[code] - distances[activeSession.start]);
@@ -244,31 +250,43 @@
                 speak("คุณอยู่ที่จุดเดิมค่ะ ลองวิ่งไปจุดถัดไปดูนะคะ");
                 return alert("จุดเดิมครับ");
             }
+
+            // พูดสรุปผลทันที
+            speak("ยอดเยี่ยมมากค่ะคุณ " + name + " ถึงจุด " + pointNames[code] + " แล้ว ระยะทางเพิ่มขึ้น " + dist + " กิโลเมตร");
+            
             showLoading(true);
             try {
+                const now = new Date();
                 await fetch(SCRIPT_URL, { 
                     method: 'POST', 
                     mode: 'no-cors', 
-                    body: JSON.stringify({ action: 'record', bib: bib, name: name, start: activeSession.start, end: code, distance: dist, startTime: activeSession.startTime }) 
+                    body: JSON.stringify({ 
+                        action: 'record', 
+                        bib: bib, 
+                        name: name, 
+                        start: activeSession.start, 
+                        end: code, 
+                        distance: dist, 
+                        startTime: activeSession.startTime,
+                        timestamp: now.toLocaleString('th-TH') // ส่งเวลาแบบอ่านง่ายเข้า Col G
+                    }) 
                 });
-                speak("ยอดเยี่ยมมากค่ะคุณ " + name + " ถึงจุด " + pointNames[code] + " แล้ว ระยะทางเพิ่มขึ้น " + dist + " กิโลเมตร " + info.cheer);
                 activeSession = { start: code, bib: bib, startTime: new Date().toISOString() };
                 document.getElementById('scanStatus').innerText = "📍 ล่าสุด: " + pointNames[code];
-            } catch(e) { alert("Error: " + e); }
+            } catch(e) { alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล"); }
             showLoading(false);
         }
     }
 
     document.getElementById('regForm').onsubmit = async (e) => {
         e.preventDefault();
-        const bib = document.getElementById('regBib').value, name = document.getElementById('regName').value;
+        const bib = document.getElementById('regBib').value.trim(), name = document.getElementById('regName').value.trim();
         showLoading(true);
         try {
             await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'register', bib: bib, name: name })});
             localRunners[bib] = { name: name };
             localStorage.setItem('runners_local', JSON.stringify(localRunners));
             document.getElementById('scanBib').value = bib;
-            // --- เสียงพูดทักทายตอนลงทะเบียนตามคำขอ ---
             speak("ยินดีต้อนรับคุณ " + name + " สู่สนาม ฟรีรัน ซันนี่ เดินวิ่งเมื่อไรก็ได้ค่ะ");
             bootstrap.Tab.getOrCreateInstance(document.querySelector('#btn-tab-run')).show();
         } catch(e) {}
@@ -284,7 +302,6 @@
             await html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
                 const p = new URL(text).searchParams.get("point");
                 if (p && pointNames[p]) { 
-                    // --- เสียงพูดเมื่อเจอจุดสแกนตามคำขอ ---
                     speak("พบจุดสแกนที่ " + pointNames[p]);
                     handleScannedPoint(p); 
                     stopScanner(); 
