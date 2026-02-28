@@ -185,17 +185,23 @@
                         const dateStr = recordDate.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
                         const timeStr = recordDate.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
                         
-                        // --- ส่วนคำนวณ Pace ---
+                        // --- ส่วนคำนวณ Pace แบบปรับปรุงใหม่ ---
                         let paceStr = "--:--";
-                        if (dist > 0) {
+                        if (dist > 0 && r[6]) { // เช็คว่ามีระยะทางและมีเวลาเริ่มต้น
                             const startTime = new Date(r[6]);
                             const endTime = new Date(r[0]);
-                            const diffMin = (endTime - startTime) / 1000 / 60;
-                            const paceDecimal = diffMin / dist;
-                            const pMin = Math.floor(paceDecimal);
-                            const pSec = Math.round((paceDecimal - pMin) * 60);
-                            paceStr = pMin + ":" + (pSec < 10 ? '0' : '') + pSec;
+                            const diffMs = endTime - startTime;
+                            
+                            // คำนวณเฉพาะเมื่อเวลาต่างกันมากกว่า 0 และไม่เกิน 5 ชั่วโมง (กันค่าเพี้ยน)
+                            if (diffMs > 0 && diffMs < 18000000) { 
+                                const diffMin = diffMs / 1000 / 60;
+                                const paceDecimal = diffMin / dist;
+                                const pMin = Math.floor(paceDecimal);
+                                const pSec = Math.round((paceDecimal - pMin) * 60);
+                                paceStr = pMin + ":" + (pSec < 10 ? '0' : '') + pSec;
+                            }
                         }
+                        // ---------------------------------------
 
                         histArray.unshift(`
                             <div class="history-card shadow-sm border-start border-primary border-4">
@@ -294,6 +300,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
 
 
 
