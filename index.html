@@ -163,7 +163,7 @@
         showLoading(false);
     }
 
-   async function loadMyStats() {
+  async function loadMyStats() {
         const inputBib = document.getElementById('myBibSearch').value.trim();
         if(!inputBib) return;
         showLoading(true);
@@ -171,8 +171,6 @@
             const res = await fetch(SCRIPT_URL);
             const rows = await res.json();
             let totalDist = 0, name = "นักวิ่ง", histArray = [];
-            
-            // กรองข้อมูลเฉพาะของนักวิ่งคนนี้
             const myRows = rows.slice(1).filter(r => String(r[2]).trim() === String(inputBib));
             
             if(myRows.length > 0) {
@@ -182,30 +180,32 @@
                         const dist = parseFloat(r[5] || 0);
                         totalDist += dist;
                         
+                        // --- ส่วนจัดการ วันที่ และ เวลา ---
+                        const recordDate = new Date(r[0]);
+                        const dateStr = recordDate.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+                        const timeStr = recordDate.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                        
                         // --- ส่วนคำนวณ Pace ---
                         let paceStr = "--:--";
                         if (dist > 0) {
-                            const startTime = new Date(r[6]); // เวลาเริ่ม (จุดก่อนหน้า)
-                            const endTime = new Date(r[0]);   // เวลาที่สแกนล่าสุด
-                            const diffMs = endTime - startTime;
-                            const diffMin = diffMs / 1000 / 60; // แปลงเป็นนาที
+                            const startTime = new Date(r[6]);
+                            const endTime = new Date(r[0]);
+                            const diffMin = (endTime - startTime) / 1000 / 60;
                             const paceDecimal = diffMin / dist;
-                            
                             const pMin = Math.floor(paceDecimal);
                             const pSec = Math.round((paceDecimal - pMin) * 60);
                             paceStr = pMin + ":" + (pSec < 10 ? '0' : '') + pSec;
                         }
-                        // ---------------------
 
                         histArray.unshift(`
                             <div class="history-card shadow-sm border-start border-primary border-4">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <span class="text-primary fw-bold small">${new Date(r[0]).toLocaleTimeString('th-TH')}น.</span>
+                                    <span class="text-primary fw-bold small">📅 ${dateStr} | 🕒 ${timeStr}น.</span>
                                     <span class="badge bg-info text-dark">Pace ${paceStr}</span>
                                     <span class="text-success fw-bold">+${dist.toFixed(2)} กม.</span>
                                 </div>
                                 <div class="small text-muted">
-                                    📍 ${pointNames[r[4]] || r[4]} <i class="bi bi-arrow-right"></i> ${pointNames[r[7]] || r[7]}
+                                    📍 ${pointNames[r[4]] || r[4]} ➡️ ${pointNames[r[7]] || r[7]}
                                 </div>
                             </div>
                         `);
@@ -215,10 +215,7 @@
                 document.getElementById('myNameDisplay').innerText = name;
                 document.getElementById('myDistDisplay').innerText = totalDist.toFixed(2);
                 document.getElementById('myProgressBar').style.width = Math.min(totalDist, 100) + '%';
-                
-                // แสดงประวัติ 10 รายการล่าสุดพร้อมค่า Pace
-                document.getElementById('myHistoryList').innerHTML = `<h6 class="fw-bold mb-2 small mt-3">สถิติ 10 รอบล่าสุด:</h6>` + (histArray.slice(0, 10).join(''));
-                
+                document.getElementById('myHistoryList').innerHTML = `<h6 class="fw-bold mb-2 small mt-3 text-secondary">ประวัติสะสมล่าสุด:</h6>` + (histArray.slice(0, 10).join(''));
                 document.getElementById('myResultArea').style.display = 'block';
                 speak("ดึงข้อมูลสำเร็จแล้วค่ะคุณ " + name);
             } else { alert("ไม่พบข้อมูล BIB: " + inputBib); }
@@ -297,6 +294,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
 
 
 
