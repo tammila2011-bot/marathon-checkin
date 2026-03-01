@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FREE RUN SUNNY 2026 - Reward Edition</title>
+    <title>FREE RUN SUNNY 2026 - Ultimate Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -47,11 +47,11 @@
     <div class="tab-content">
         <div class="tab-pane fade show active" id="tab-reg">
             <div class="card p-4 mx-auto" style="max-width: 400px;">
-                <h6 class="mb-3 fw-bold text-center text-primary">ลงทะเบียนใหม่ / แก้ไขชื่อ</h6>
+                <h6 class="mb-3 fw-bold text-center text-primary">ลงทะเบียนใหม่ (ห้ามเลขซ้ำ)</h6>
                 <form id="regForm">
                     <div class="mb-3"><label class="form-label small">เลข BIB</label><input type="text" id="regBib" class="form-control" required></div>
                     <div class="mb-3"><label class="form-label small">ชื่อ-นามสกุล</label><input type="text" id="regName" class="form-control" required></div>
-                    <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm">เริ่มสะสมระยะ</button>
+                    <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm">ลงทะเบียน</button>
                 </form>
             </div>
         </div>
@@ -101,9 +101,9 @@
                     <div id="myMedalDisplay" style="font-size:3rem; margin:10px 0;">🏃‍♂️</div>
                     
                     <div id="certArea">
-                        <a id="btnCertBronze" href="#" class="btn btn-warning cert-btn w-100 shadow-sm" style="background:#cd7f32; border:none; color:white;">📜 รับเกียรติบัตร 20 กม. (Bronze)</a>
-                        <a id="btnCertSilver" href="#" class="btn btn-secondary cert-btn w-100 shadow-sm" style="background:#c0c0c0; border:none; color:white;">📜 รับเกียรติบัตร 50 กม. (Silver)</a>
-                        <a id="btnCertGold" href="#" class="btn btn-warning cert-btn w-100 shadow-sm" style="background:#ffd700; border:none; color:black;">📜 รับเกียรติบัตรผู้พิชิต 100 กม. (Gold)</a>
+                        <a id="btnCertBronze" href="#" class="btn btn-warning cert-btn w-100 shadow-sm" style="background:#cd7f32; border:none; color:white;">📜 รับเกียรติบัตร 20 กม.</a>
+                        <a id="btnCertSilver" href="#" class="btn btn-secondary cert-btn w-100 shadow-sm" style="background:#c0c0c0; border:none; color:white;">📜 รับเกียรติบัตร 50 กม.</a>
+                        <a id="btnCertGold" href="#" class="btn btn-warning cert-btn w-100 shadow-sm" style="background:#ffd700; border:none; color:black;">📜 รับเกียรติบัตรผู้พิชิต 100 กม.</a>
                     </div>
 
                     <div class="px-3 mt-3">
@@ -129,6 +129,7 @@
     
     let html5QrCode, activeSession = null, localRunners = JSON.parse(localStorage.getItem('runners_local')) || {};
 
+    // --- กล้อง ---
     async function startScanner() {
         try {
             const cams = await Html5Qrcode.getCameras();
@@ -147,10 +148,10 @@
                             handleScannedPoint(p);
                             stopScanner();
                         }
-                    } catch(e) { console.log("QR Scan Error"); }
+                    } catch(e) {}
                 });
-            } else { alert("ไม่พบกล้อง"); }
-        } catch (err) { alert("เข้าถึงกล้องไม่ได้: " + err); }
+            }
+        } catch (err) { alert("กล้องมีปัญหา: " + err); }
     }
 
     function stopScanner() {
@@ -164,37 +165,59 @@
 
     function handleScannedPoint(p) {
         document.querySelectorAll('.btn-checkpoint').forEach(b => b.style.display = 'none');
-        const targetBtn = document.getElementById('btn' + p);
-        if (targetBtn) {
-            targetBtn.style.display = 'block';
-            document.getElementById('scanStatus').innerText = "📍 พบจุด: " + pointNames[p];
-        }
+        const btn = document.getElementById('btn' + p);
+        if (btn) { btn.style.display = 'block'; document.getElementById('scanStatus').innerText = "📍 พบจุด: " + pointNames[p]; }
     }
 
+    // --- บันทึกจุด (Pace A->B) ---
     async function checkPoint(code) {
         const bib = document.getElementById('scanBib').value.trim();
-        if(!bib) return alert('ใส่ BIB ก่อนครับ');
+        if(!bib) return alert('ระบุ BIB');
         const name = localRunners[bib]?.name || 'นักวิ่ง';
         const now = new Date();
         if(!activeSession) {
             activeSession = { start: code, bib: bib, startTime: now.toISOString() };
-            speak("เริ่มบันทึกจากจุด " + pointNames[code] + " ยินดีต้อนรับคุณ " + name);
-            document.getElementById('scanStatus').innerText = "📍 เริ่มจาก: " + pointNames[code];
+            speak("เริ่มบันทึกจากจุด " + pointNames[code] + " คุณ " + name);
             fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'record', bib: bib, name: name, start: code, end: code, distance: 0 }) });
         } else {
             const dist = Math.abs(distances[code] - distances[activeSession.start]);
-            if(dist === 0) return speak("อยู่ที่จุดเดิมค่ะคุณ " + name);
+            if(dist === 0) return speak("อยู่ที่จุดเดิมค่ะ");
             speak("ถึงจุด " + pointNames[code] + " ระยะ " + dist + " กิโลเมตร เก่งมากค่ะคุณ " + name);
             showLoading(true);
             try {
                 await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'record', bib: bib, name: name, start: activeSession.start, end: code, distance: dist, startTime: activeSession.startTime }) });
                 activeSession = { start: code, bib: bib, startTime: now.toISOString() };
-                document.getElementById('scanStatus').innerText = "📍 ล่าสุด: " + pointNames[code];
             } catch(e) {}
             showLoading(false);
         }
     }
 
+    // --- ลงทะเบียน (ป้องกันซ้ำ) ---
+    document.getElementById('regForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const bib = document.getElementById('regBib').value.trim();
+        const name = document.getElementById('regName').value.trim();
+        showLoading(true);
+        try {
+            const res = await fetch(SCRIPT_URL);
+            const rows = await res.json();
+            const isDup = rows.slice(1).some(r => String(r[2]).trim() === String(bib));
+            if (isDup) {
+                showLoading(false);
+                speak("บีไอบีนี้มีคนใช้แล้วค่ะ");
+                return alert("เลข BIB นี้มีผู้ใช้งานแล้วครับ");
+            }
+            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'register', bib: bib, name: name })});
+            localRunners[bib] = { name: name };
+            localStorage.setItem('runners_local', JSON.stringify(localRunners));
+            document.getElementById('scanBib').value = bib;
+            speak("ลงทะเบียนสำเร็จค่ะ");
+            bootstrap.Tab.getOrCreateInstance(document.querySelector('button[data-bs-target="#tab-run"]')).show();
+        } catch(e) {}
+        showLoading(false);
+    };
+
+    // --- สถิติส่วนตัว (ดึงชื่อล่าสุด + รางวัล) ---
     async function loadMyStats() {
         const inputBib = document.getElementById('myBibSearch').value.trim();
         if(!inputBib) return;
@@ -205,26 +228,22 @@
             let totalDist = 0, name = "นักวิ่ง", histArray = [];
             const myRows = rows.slice(1).filter(r => String(r[2]).trim() === String(inputBib));
             if(myRows.length > 0) {
-                name = myRows[0][3];
-                if(!localRunners[inputBib]) {
-                    localRunners[inputBib] = { name: name };
-                    localStorage.setItem('runners_local', JSON.stringify(localRunners));
-                }
+                for(let i = myRows.length-1; i>=0; i--) { if(myRows[i][3]) { name = myRows[i][3]; break; } }
+                localRunners[inputBib] = { name: name };
+                localStorage.setItem('runners_local', JSON.stringify(localRunners));
                 myRows.forEach(r => {
                     if(r[1] === 'RUN') {
                         const dist = parseFloat(r[5] || 0); totalDist += dist;
-                        const d = new Date(r[0]);
-                        const dStr = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
-                        const tStr = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-                        let paceStr = "--:--";
+                        const d = new Date(r[0]), dStr = d.toLocaleDateString('th-TH',{day:'numeric',month:'short'}), tStr = d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+                        let ps = "--:--";
                         if (dist > 0 && r[6]) {
                             const diff = new Date(r[0]) - new Date(r[6]);
                             if (diff > 0 && diff < 18000000) {
-                                const paceDecimal = (diff / 60000) / dist;
-                                paceStr = Math.floor(paceDecimal) + ":" + Math.round((paceDecimal % 1) * 60).toString().padStart(2, '0');
+                                const pd = (diff / 60000) / dist;
+                                ps = Math.floor(pd) + ":" + Math.round((pd % 1) * 60).toString().padStart(2, '0');
                             }
                         }
-                        histArray.unshift(`<div class="history-card shadow-sm border-start border-primary border-4"><div class="d-flex justify-content-between mb-1"><span class="text-primary fw-bold small">📅 ${dStr} | 🕒 ${tStr}น.</span><span class="badge bg-info text-dark">Pace ${paceStr}</span><span class="text-success fw-bold">+${dist.toFixed(2)} กม.</span></div><div class="small text-muted text-start">📍 ${pointNames[r[4]] || r[4]} ➡️ ${pointNames[r[7]] || r[7]}</div></div>`);
+                        histArray.unshift(`<div class="history-card shadow-sm border-start border-primary border-4"><div class="d-flex justify-content-between mb-1"><span class="text-primary fw-bold small">📅 ${dStr} | 🕒 ${tStr}น.</span><span class="badge bg-info text-dark">Pace ${ps}</span><span class="text-success fw-bold">+${dist.toFixed(2)} กม.</span></div><div class="small text-muted text-start">📍 ${pointNames[r[4]] || r[4]} ➡️ ${pointNames[r[7]] || r[7]}</div></div>`);
                     }
                 });
                 document.getElementById('myNameDisplay').innerText = name;
@@ -233,24 +252,20 @@
                 document.getElementById('myHistoryList').innerHTML = `<h6 class="fw-bold mb-2 small mt-3 text-secondary text-start">ประวัติล่าสุด:</h6>` + (histArray.slice(0, 10).join(''));
                 document.getElementById('myResultArea').style.display = 'block';
 
-                // --- 🏆 ระบบเหรียญรางวัลและเกียรติบัตร ---
-                // ซ่อนปุ่มทั้งหมดก่อน
-                document.querySelectorAll('.cert-btn').forEach(btn => btn.style.display = 'none');
-                
+                document.querySelectorAll('.cert-btn').forEach(b => b.style.display = 'none');
                 if (totalDist >= 100) {
                     document.getElementById('myMedalDisplay').innerHTML = "🥇🏆🎆";
                     document.getElementById('btnCertGold').style.display = 'block';
-                    document.getElementById('btnCertGold').href = `https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform?entry.123=${name}&entry.456=100km`; // ลิงก์เกียรติบัตรอาจารย์
-                    speak("ยินดีด้วยระดับเหรียญทองค่ะคุณ " + name + " คุณคือผู้พิชิต 100 กิโลเมตร สุดยอดมากค่ะ");
+                    speak("ยินดีด้วยระดับเหรียญทองค่ะคุณ " + name + " ผู้พิชิต 100 กิโลเมตร");
                     playFireworkSound();
                 } else if (totalDist >= 50) {
                     document.getElementById('myMedalDisplay').innerHTML = "🥈✨";
                     document.getElementById('btnCertSilver').style.display = 'block';
-                    speak("ยินดีด้วยระดับเหรียญเงินค่ะคุณ " + name + " อีกนิดเดียวจะครบ 100 แล้ว สู้ๆ ค่ะ");
+                    speak("ยินดีด้วยระดับเหรียญเงินค่ะคุณ " + name);
                 } else if (totalDist >= 20) {
                     document.getElementById('myMedalDisplay').innerHTML = "🥉";
                     document.getElementById('btnCertBronze').style.display = 'block';
-                    speak("ยินดีด้วยระดับเหรียญทองแดงค่ะคุณ " + name + " สะสมระยะต่อไปนะคะ");
+                    speak("ยินดีด้วยระดับเหรียญทองแดงค่ะคุณ " + name);
                 } else {
                     document.getElementById('myMedalDisplay').innerHTML = "🏃‍♂️";
                     speak("ดึงข้อมูลสำเร็จแล้วค่ะคุณ " + name);
@@ -264,14 +279,11 @@
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         for(let i=0; i<3; i++) {
             setTimeout(() => {
-                const oscillator = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-                oscillator.type = 'square'; oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                oscillator.frequency.setValueAtTime(100, audioCtx.currentTime);
-                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.2);
-                oscillator.start(); oscillator.stop(audioCtx.currentTime + 1.2);
+                const osc = audioCtx.createOscillator(); const gn = audioCtx.createGain();
+                osc.type = 'square'; osc.connect(gn); gn.connect(audioCtx.destination);
+                osc.frequency.setValueAtTime(100, audioCtx.currentTime); gn.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gn.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.2);
+                osc.start(); osc.stop(audioCtx.currentTime + 1.2);
             }, i * 600);
         }
     }
@@ -294,23 +306,8 @@
         showLoading(false);
     }
 
-    document.getElementById('regForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const bib = document.getElementById('regBib').value.trim(), name = document.getElementById('regName').value.trim();
-        showLoading(true);
-        try {
-            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'register', bib: bib, name: name })});
-            localRunners[bib] = { name: name };
-            localStorage.setItem('runners_local', JSON.stringify(localRunners));
-            document.getElementById('scanBib').value = bib;
-            speak("ลงทะเบียนเรียบร้อยค่ะคุณ " + name);
-            bootstrap.Tab.getOrCreateInstance(document.querySelector('button[data-bs-target="#tab-run"]')).show();
-        } catch(e) {}
-        showLoading(false);
-    };
-
     function unlockAudio() {
-        const msg = new SpeechSynthesisUtterance('พร้อมมอบรางวัลแล้วค่ะ');
+        const msg = new SpeechSynthesisUtterance('พร้อมแล้วค่ะ');
         msg.lang = 'th-TH'; window.speechSynthesis.speak(msg);
         document.getElementById('voiceBtn').innerText = "✅ ระบบเสียงทำงานแล้ว";
         document.getElementById('voiceBtn').className = "btn btn-outline-success btn-sm rounded-pill";
@@ -327,6 +324,7 @@
 </script>
 </body>
 </html>
+
 
 
 
