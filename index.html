@@ -10,7 +10,7 @@
     <style>
         :root { --primary: #6f42c1; }
         body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); font-family: 'Prompt', sans-serif; min-height: 100vh; }
-        .card { border: none; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.05); background: rgba(255, 255, 255, 0.95); }
+        .card { border: none; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.05); background: rgba(255, 255, 255, 0.95); margin-bottom: 20px; }
         .logo-container { text-align: center; margin-bottom: 10px; }
         .main-logo { max-width: 100%; height: auto; border-radius: 15px; }
         .total-km-box { background: linear-gradient(45deg, #6f42c1, #e91e63); color: white; border-radius: 20px; padding: 15px; margin-bottom: 15px; text-align: center; }
@@ -35,11 +35,11 @@
         <button id="voiceBtn" class="btn-voice-unlock shadow-sm" onclick="unlockAudio()">🔊 กดเปิดระบบเสียงทักทาย</button>
     </div>
 
-    <ul class="nav nav-pills nav-fill mb-3 bg-white p-1 rounded-pill shadow-sm overflow-auto flex-nowrap">
-        <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-reg">1. ลงทะเบียน</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-run">2. สแกนจุด</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-stat" onclick="fetchDataFromCloud()">3. อันดับรวม</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-me">4. สถิติฉัน</button></li>
+    <ul class="nav nav-pills nav-fill mb-3 bg-white p-1 rounded-pill shadow-sm overflow-auto flex-nowrap" id="pills-tab" role="tablist">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-reg" type="button">1. ลงทะเบียน</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-run" type="button">2. สแกนจุด</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-stat" type="button" onclick="fetchDataFromCloud()">3. อันดับรวม</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-me" type="button">4. สถิติฉัน</button></li>
     </ul>
 
     <div class="tab-content">
@@ -112,6 +112,7 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzy-ZwEbMenc0ZBCR_H2EnboPErMMd3IdqeUVrcQy5HaGs5UPM8a1AuUPwfh3mDXvmM/exec";
     const distances = { 'A':0, 'B':0.5, 'C':1.0, 'D':2.0, 'E':2.5, 'F':4.0 };
@@ -119,7 +120,6 @@
     
     let html5QrCode, activeSession = null, localRunners = JSON.parse(localStorage.getItem('runners_local')) || {};
 
-    // 1. ฟังก์ชันเปิดกล้อง
     async function startScanner() {
         try {
             const cams = await Html5Qrcode.getCameras();
@@ -136,9 +136,9 @@
                             handleScannedPoint(p);
                             stopScanner();
                         }
-                    } catch(e) { console.log("QR Code รูปแบบทั่วไป"); }
+                    } catch(e) { console.log("QR Scan Error"); }
                 });
-            }
+            } else { alert("ไม่พบกล้อง"); }
         } catch (err) { alert("เข้าถึงกล้องไม่ได้: " + err); }
     }
 
@@ -160,40 +160,30 @@
         }
     }
 
-    // 2. ฟังก์ชันเช็คอิน
     async function checkPoint(code) {
         const bib = document.getElementById('scanBib').value.trim();
         if(!bib) return alert('ใส่ BIB ก่อนครับ');
         const name = localRunners[bib]?.name || 'นักวิ่ง';
         const now = new Date();
-
         if(!activeSession) {
             activeSession = { start: code, bib: bib, startTime: now.toISOString() };
             speak("เริ่มบันทึกจากจุด " + pointNames[code]);
-            document.getElementById('scanStatus').innerText = "📍 เริ่มวิ่งจาก: " + pointNames[code];
+            document.getElementById('scanStatus').innerText = "📍 เริ่มจาก: " + pointNames[code];
             fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'record', bib: bib, name: name, start: code, end: code, distance: 0 }) });
         } else {
             const dist = Math.abs(distances[code] - distances[activeSession.start]);
             if(dist === 0) return speak("อยู่ที่จุดเดิมค่ะ");
-            speak("ถึงจุด " + pointNames[code] + " ระยะทาง " + dist + " กิโลเมตร");
+            speak("ถึงจุด " + pointNames[code] + " ระยะ " + dist + " กิโลเมตร");
             showLoading(true);
             try {
-                await fetch(SCRIPT_URL, { 
-                    method: 'POST', mode: 'no-cors', 
-                    body: JSON.stringify({ 
-                        action: 'record', bib: bib, name: name, 
-                        start: activeSession.start, end: code, distance: dist,
-                        startTime: activeSession.startTime 
-                    }) 
-                });
+                await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'record', bib: bib, name: name, start: activeSession.start, end: code, distance: dist, startTime: activeSession.startTime }) });
                 activeSession = { start: code, bib: bib, startTime: now.toISOString() };
-                document.getElementById('scanStatus').innerText = "📍 ล่าสุดถึง: " + pointNames[code];
+                document.getElementById('scanStatus').innerText = "📍 ล่าสุด: " + pointNames[code];
             } catch(e) {}
             showLoading(false);
         }
     }
 
-    // 3. ฟังก์ชันสถิติ
     async function loadMyStats() {
         const inputBib = document.getElementById('myBibSearch').value.trim();
         if(!inputBib) return;
@@ -208,29 +198,27 @@
                 myRows.forEach(r => {
                     if(r[1] === 'RUN') {
                         const dist = parseFloat(r[5] || 0); totalDist += dist;
-                        const recordDate = new Date(r[0]);
-                        const dateStr = recordDate.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
-                        const timeStr = recordDate.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                        const d = new Date(r[0]);
+                        const dStr = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+                        const tStr = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
                         let paceStr = "--:--";
                         if (dist > 0 && r[6]) {
-                            const startTime = new Date(r[6]), endTime = new Date(r[0]);
-                            const diffMs = endTime - startTime;
-                            if (diffMs > 0 && diffMs < 18000000) {
-                                const paceDecimal = (diffMs / 1000 / 60) / dist;
-                                const pMin = Math.floor(paceDecimal), pSec = Math.round((paceDecimal - pMin) * 60);
-                                paceStr = pMin + ":" + (pSec < 10 ? '0' : '') + pSec;
+                            const diff = new Date(r[0]) - new Date(r[6]);
+                            if (diff > 0 && diff < 18000000) {
+                                const paceDecimal = (diff / 60000) / dist;
+                                paceStr = Math.floor(paceDecimal) + ":" + Math.round((paceDecimal % 1) * 60).toString().padStart(2, '0');
                             }
                         }
-                        histArray.unshift(`<div class="history-card shadow-sm border-start border-primary border-4"><div class="d-flex justify-content-between mb-1"><span class="text-primary fw-bold small">📅 ${dateStr} | 🕒 ${timeStr}น.</span><span class="badge bg-info text-dark">Pace ${paceStr}</span><span class="text-success fw-bold">+${dist.toFixed(2)} กม.</span></div><div class="small text-muted text-start">📍 ${pointNames[r[4]] || r[4]} ➡️ ${pointNames[r[7]] || r[7]}</div></div>`);
+                        histArray.unshift(`<div class="history-card shadow-sm border-start border-primary border-4"><div class="d-flex justify-content-between mb-1"><span class="text-primary fw-bold small">📅 ${dStr} | 🕒 ${tStr}น.</span><span class="badge bg-info text-dark">Pace ${paceStr}</span><span class="text-success fw-bold">+${dist.toFixed(2)} กม.</span></div><div class="small text-muted text-start">📍 ${pointNames[r[4]] || r[4]} ➡️ ${pointNames[r[7]] || r[7]}</div></div>`);
                     }
                 });
                 document.getElementById('myNameDisplay').innerText = name;
                 document.getElementById('myDistDisplay').innerText = totalDist.toFixed(2);
                 document.getElementById('myProgressBar').style.width = Math.min(totalDist, 100) + '%';
-                document.getElementById('myHistoryList').innerHTML = `<h6 class="fw-bold mb-2 small mt-3 text-secondary text-start">ประวัติสะสมล่าสุด:</h6>` + (histArray.slice(0, 10).join(''));
+                document.getElementById('myHistoryList').innerHTML = `<h6 class="fw-bold mb-2 small mt-3 text-secondary text-start">ประวัติล่าสุด:</h6>` + (histArray.slice(0, 10).join(''));
                 document.getElementById('myResultArea').style.display = 'block';
-                speak("ดึงข้อมูลสำเร็จแล้วค่ะคุณ " + name);
-            } else { alert("ไม่พบข้อมูล BIB: " + inputBib); }
+                speak("ดึงข้อมูลสำเร็จแล้วค่ะ");
+            } else { alert("ไม่พบข้อมูล BIB"); }
         } catch(e) {}
         showLoading(false);
     }
@@ -262,14 +250,15 @@
             localRunners[bib] = { name: name };
             localStorage.setItem('runners_local', JSON.stringify(localRunners));
             document.getElementById('scanBib').value = bib;
-            speak("ลงทะเบียนเรียบร้อยค่ะคุณ " + name);
-            new bootstrap.Tab(document.querySelector('button[data-bs-target="#tab-run"]')).show();
+            speak("ลงทะเบียนเรียบร้อยค่ะ");
+            const runTab = document.querySelector('button[data-bs-target="#tab-run"]');
+            bootstrap.Tab.getOrCreateInstance(runTab).show();
         } catch(e) {}
         showLoading(false);
     };
 
     function unlockAudio() {
-        const msg = new SpeechSynthesisUtterance('ระบบเสียงชมรมซันนี่พร้อมแล้วค่ะ');
+        const msg = new SpeechSynthesisUtterance('พร้อมแล้วค่ะ');
         msg.lang = 'th-TH'; window.speechSynthesis.speak(msg);
         document.getElementById('voiceBtn').innerText = "✅ ระบบเสียงทำงานแล้ว";
         document.getElementById('voiceBtn').className = "btn btn-outline-success btn-sm rounded-pill";
@@ -284,9 +273,9 @@
 
     function showLoading(s) { document.getElementById('loading').style.display = s ? 'flex' : 'none'; }
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
 
 
 
