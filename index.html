@@ -233,60 +233,52 @@
         const bib = document.getElementById('scanBib').value.trim();
         if(!bib) return alert('ใส่ BIB ก่อนครับ');
         const name = localRunners[bib]?.name || 'นักวิ่ง';
+        const now = new Date();
+
         if(!activeSession) {
-            activeSession = { start: code, bib: bib, startTime: new Date().toISOString() };
-            speak("บันทึกจุดเริ่มที่ " + pointNames[code]);
-            document.getElementById('scanStatus').innerText = "📍 เริ่มจาก: " + pointNames[code];
+            // --- จังหวะที่ 1: กดจุดเริ่ม (เช่น จุด A) ---
+            activeSession = { 
+                start: code, 
+                bib: bib, 
+                startTime: now.toISOString() // บันทึกเวลาเริ่มกดทันที
+            };
+            speak("เริ่มบันทึกจากจุด " + pointNames[code]);
+            document.getElementById('scanStatus').innerText = "📍 เริ่มวิ่งจาก: " + pointNames[code];
+            
+            // ส่งข้อมูลไปบันทึกใน Sheet ว่า "เริ่มออกตัว" (ระยะทาง 0)
+            // เพื่อให้ในประวัติมีจุด Start อ้างอิง
+            fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'record', bib: bib, name: name, start: code, end: code, distance: 0 }) });
+            
         } else {
+            // --- จังหวะที่ 2: ถึงจุดถัดไป (เช่น จุด B) ---
             const dist = Math.abs(distances[code] - distances[activeSession.start]);
+            
             if(dist === 0) return speak("อยู่ที่จุดเดิมค่ะ");
-            speak("ถึงจุด " + pointNames[code] + " ระยะทางบวก " + dist + " กิโลเมตร");
+            
+            speak("ถึงจุด " + pointNames[code] + " ระยะทาง " + dist + " กิโลเมตร");
             showLoading(true);
+            
             try {
-                const now = new Date();
                 await fetch(SCRIPT_URL, { 
-                    method: 'POST', mode: 'no-cors', 
+                    method: 'POST', 
+                    mode: 'no-cors', 
                     body: JSON.stringify({ 
-                        action: 'record', bib: bib, name: name, start: activeSession.start, end: code, distance: dist, 
-                        startTime: activeSession.startTime, timestamp: now.toLocaleString('th-TH')
+                        action: 'record', 
+                        bib: bib, 
+                        name: name, 
+                        start: activeSession.start, // ใช้จุดที่กดไว้ก่อนหน้า
+                        end: code, 
+                        distance: dist,
+                        startTime: activeSession.startTime // ส่งเวลาเริ่มไปคำนวณ Pace
                     }) 
                 });
-                activeSession = { start: code, bib: bib, startTime: new Date().toISOString() };
-                document.getElementById('scanStatus').innerText = "📍 ล่าสุด: " + pointNames[code];
-            } catch(e) { alert("Error"); }
+                
+                // อัปเดตจุดเริ่มใหม่เป็นจุดที่เพิ่งถึง เพื่อวิ่งต่อไปจุด C
+                activeSession = { start: code, bib: bib, startTime: now.toISOString() };
+                document.getElementById('scanStatus').innerText = "📍 ล่าสุดถึง: " + pointNames[code];
+                
+            } catch(e) { console.error(e); }
             showLoading(false);
-        }
-    }
-
-    document.getElementById('regForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const bib = document.getElementById('regBib').value.trim(), name = document.getElementById('regName').value.trim();
-        showLoading(true);
-        try {
-            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'register', bib: bib, name: name })});
-            localRunners[bib] = { name: name };
-            localStorage.setItem('runners_local', JSON.stringify(localRunners));
-            document.getElementById('scanBib').value = bib;
-            speak("ลงทะเบียนเรียบร้อยค่ะคุณ " + name);
-            bootstrap.Tab.getOrCreateInstance(document.querySelector('button[data-bs-target="#tab-run"]')).show();
-        } catch(e) {}
-        showLoading(false);
-    };
-
-    async function startScanner() {
-        const cams = await Html5Qrcode.getCameras();
-        if (cams.length > 0) {
-            document.getElementById('startScanBtn').style.display = 'none';
-            document.getElementById('stopScanBtn').style.display = 'block';
-            html5QrCode = new Html5Qrcode("reader");
-            await html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
-                const p = new URL(text).searchParams.get("point");
-                if (p && pointNames[p]) { 
-                    speak("พบจุด " + pointNames[p]);
-                    handleScannedPoint(p); 
-                    stopScanner(); 
-                }
-            });
         }
     }
     function stopScanner() { if (html5QrCode?.isScanning) html5QrCode.stop().then(() => { document.getElementById('startScanBtn').style.display = 'block'; document.getElementById('stopScanBtn').style.display = 'none'; }); }
@@ -300,6 +292,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
 
 
 
