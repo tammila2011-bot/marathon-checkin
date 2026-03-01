@@ -118,9 +118,7 @@
     const distances = { 'A':0, 'B':0.5, 'C':1.0, 'D':2.0, 'E':2.5, 'F':4.0 };
     const pointNames = { 'A':'ทิชเชอร์แค้มป์', 'B':'ตำมิละ', 'C':'วัดหลวง', 'D':'เสาพญานาค', 'E':'วัดหาดไคร้', 'F':'ปลาบึกสีทอง' };
     
-    let html5QrCode, activeSession = null;
-    // --- ดึงข้อมูลนักวิ่งที่เคยลงทะเบียนไว้ในเครื่องนี้ ---
-    let localRunners = JSON.parse(localStorage.getItem('runners_local')) || {};
+    let html5QrCode, activeSession = null, localRunners = JSON.parse(localStorage.getItem('runners_local')) || {};
 
     async function startScanner() {
         try {
@@ -134,7 +132,6 @@
                         const url = new URL(text);
                         const p = url.searchParams.get("point");
                         if (p && pointNames[p]) {
-                            // เช็คชื่อจาก BIB ที่กรอกค้างไว้
                             const bib = document.getElementById('scanBib').value.trim();
                             const name = localRunners[bib]?.name || '';
                             speak("พบจุด " + pointNames[p] + (name ? " ของคุณ " + name : ""));
@@ -168,11 +165,8 @@
     async function checkPoint(code) {
         const bib = document.getElementById('scanBib').value.trim();
         if(!bib) return alert('ใส่ BIB ก่อนครับ');
-        
-        // --- ส่วนที่เรียกชื่อนักวิ่ง ---
         const name = localRunners[bib]?.name || 'นักวิ่ง';
         const now = new Date();
-
         if(!activeSession) {
             activeSession = { start: code, bib: bib, startTime: now.toISOString() };
             speak("เริ่มบันทึกจากจุด " + pointNames[code] + " ยินดีต้อนรับคุณ " + name);
@@ -181,7 +175,6 @@
         } else {
             const dist = Math.abs(distances[code] - distances[activeSession.start]);
             if(dist === 0) return speak("อยู่ที่จุดเดิมค่ะคุณ " + name);
-            
             speak("ถึงจุด " + pointNames[code] + " ระยะ " + dist + " กิโลเมตร เก่งมากค่ะคุณ " + name);
             showLoading(true);
             try {
@@ -204,7 +197,6 @@
             const myRows = rows.slice(1).filter(r => String(r[2]).trim() === String(inputBib));
             if(myRows.length > 0) {
                 name = myRows[0][3];
-                // อัปเดตข้อมูลชื่อลงในเครื่องด้วยถ้ายังไม่มี
                 if(!localRunners[inputBib]) {
                     localRunners[inputBib] = { name: name };
                     localStorage.setItem('runners_local', JSON.stringify(localRunners));
@@ -231,10 +223,34 @@
                 document.getElementById('myProgressBar').style.width = Math.min(totalDist, 100) + '%';
                 document.getElementById('myHistoryList').innerHTML = `<h6 class="fw-bold mb-2 small mt-3 text-secondary text-start">ประวัติล่าสุด:</h6>` + (histArray.slice(0, 10).join(''));
                 document.getElementById('myResultArea').style.display = 'block';
-                speak("ดึงข้อมูลสำเร็จแล้วค่ะคุณ " + name);
+
+                if (totalDist >= 100) {
+                    document.getElementById('myMedalDisplay').innerHTML = "🏆👑🥇";
+                    speak("ยินดีด้วยอย่างยิ่งค่ะคุณ " + name + " คุณทำสำเร็จแล้ว 100 กิโลเมตร สุดยอดมากค่ะ");
+                    playFireworkSound();
+                } else {
+                    document.getElementById('myMedalDisplay').innerHTML = "🏃‍♂️";
+                    speak("ดึงข้อมูลสำเร็จแล้วค่ะคุณ " + name);
+                }
             } else { alert("ไม่พบข้อมูล BIB"); }
         } catch(e) {}
         showLoading(false);
+    }
+
+    function playFireworkSound() {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        for(let i=0; i<3; i++) {
+            setTimeout(() => {
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.type = 'square'; oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.frequency.setValueAtTime(100, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.2);
+                oscillator.start(); oscillator.stop(audioCtx.currentTime + 1.2);
+            }, i * 600);
+        }
     }
 
     async function fetchDataFromCloud() {
@@ -261,19 +277,17 @@
         showLoading(true);
         try {
             await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'register', bib: bib, name: name })});
-            // บันทึกชื่อลงเครื่องทันที
             localRunners[bib] = { name: name };
             localStorage.setItem('runners_local', JSON.stringify(localRunners));
             document.getElementById('scanBib').value = bib;
             speak("ลงทะเบียนเรียบร้อยค่ะคุณ " + name);
-            const runTab = document.querySelector('button[data-bs-target="#tab-run"]');
-            bootstrap.Tab.getOrCreateInstance(runTab).show();
+            bootstrap.Tab.getOrCreateInstance(document.querySelector('button[data-bs-target="#tab-run"]')).show();
         } catch(e) {}
         showLoading(false);
     };
 
     function unlockAudio() {
-        const msg = new SpeechSynthesisUtterance('ระบบเสียงพร้อมแล้วค่ะ');
+        const msg = new SpeechSynthesisUtterance('พร้อมแล้วค่ะ');
         msg.lang = 'th-TH'; window.speechSynthesis.speak(msg);
         document.getElementById('voiceBtn').innerText = "✅ ระบบเสียงทำงานแล้ว";
         document.getElementById('voiceBtn').className = "btn btn-outline-success btn-sm rounded-pill";
@@ -290,6 +304,7 @@
 </script>
 </body>
 </html>
+
 
 
 
