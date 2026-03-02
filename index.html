@@ -79,7 +79,7 @@
         <div class="tab-pane fade" id="tab-stat">
             <div class="card p-3">
                 <div class="total-km-box shadow-sm">
-                    <small>รวมพลังเดิน-วิ่งชาวซันนี่</small>
+                    <small>รวมพลังเดิน-วิ่งชาวSunny</small>
                     <h2 class="fw-bold mb-0"><span id="grandTotalKm">0.00</span> กม.</h2>
                 </div>
                 <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
@@ -204,7 +204,7 @@
             const isDup = rows.slice(1).some(r => String(r[2]).trim() === String(bib));
             if (isDup) {
                 showLoading(false);
-                speak("บีไอบีนี้มีคนใช้แล้วค่ะ");
+                speak("BIBนี้มีคนใช้แล้วค่ะ");
                 return alert("เลข BIB นี้มีผู้ใช้งานแล้วครับ");
             }
             await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'register', bib: bib, name: name })});
@@ -324,6 +324,7 @@
 </script>
 </body>
 </html>
+
 
 
 
