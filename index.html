@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FREE RUN SUNNY 2026 - Ultimate Edition</title>
+    <title>FREE RUN SUNNY 2026 - Master Unique Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -47,10 +47,10 @@
     <div class="tab-content">
         <div class="tab-pane fade show active" id="tab-reg">
             <div class="card p-4 mx-auto" style="max-width: 400px;">
-                <h6 class="mb-3 fw-bold text-center text-primary">ลงทะเบียนนักวิ่งใหม่ (กำหนดเลข BIB เองเช่น A123...)</h6>
+                <h6 class="mb-3 fw-bold text-center text-primary">ลงทะเบียนใหม่ / แก้ไขชื่อ</h6>
                 <form id="regForm">
                     <div class="mb-3"><label class="form-label small">เลข BIB</label><input type="text" id="regBib" class="form-control" required></div>
-                    <div class="mb-3"><label class="form-label small">ชื่อเล่นภาษาไทยหรืออังกฤษก็ได้</label><input type="text" id="regName" class="form-control" required></div>
+                    <div class="mb-3"><label class="form-label small">ชื่อเล่น/ฉายา</label><input type="text" id="regName" class="form-control" required></div>
                     <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm">ลงทะเบียน</button>
                 </form>
             </div>
@@ -79,7 +79,7 @@
         <div class="tab-pane fade" id="tab-stat">
             <div class="card p-3">
                 <div class="total-km-box shadow-sm">
-                    <small>รวมพลังเดิน-วิ่งชาวSunny</small>
+                    <small>รวมพลังเดิน-วิ่งชาว Sunny</small>
                     <h2 class="fw-bold mb-0"><span id="grandTotalKm">0.00</span> กม.</h2>
                 </div>
                 <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
@@ -127,7 +127,7 @@
     const distances = { 'A':0, 'B':0.5, 'C':1.0, 'D':2.0, 'E':2.5, 'F':4.0 };
     const pointNames = { 'A':'ทิชเชอร์แค้มป์', 'B':'ตำมิละ', 'C':'วัดหลวง', 'D':'เสาพญานาค', 'E':'วัดหาดไคร้', 'F':'ปลาบึกสีทอง' };
     
-    let html5QrCode, activeSession = null, localRunners = JSON.parse(localStorage.getItem('runners_local')) || {};
+    let html5QrCode, activeSession = null;
 
     // --- กล้อง ---
     async function startScanner() {
@@ -142,9 +142,6 @@
                         const url = new URL(text);
                         const p = url.searchParams.get("point");
                         if (p && pointNames[p]) {
-                            const bib = document.getElementById('scanBib').value.trim();
-                            const name = localRunners[bib]?.name || '';
-                            speak("พบจุด " + pointNames[p] + (name ? " ของคุณ " + name : ""));
                             handleScannedPoint(p);
                             stopScanner();
                         }
@@ -155,7 +152,7 @@
     }
 
     function stopScanner() {
-        if (html5QrCode && html5QrCode.isScanning) {
+        if (html5QrCode?.isScanning) {
             html5QrCode.stop().then(() => {
                 document.getElementById('startScanBtn').style.display = 'block';
                 document.getElementById('stopScanBtn').style.display = 'none';
@@ -169,55 +166,57 @@
         if (btn) { btn.style.display = 'block'; document.getElementById('scanStatus').innerText = "📍 พบจุด: " + pointNames[p]; }
     }
 
-    // --- บันทึกจุด (Pace A->B) ---
+    // --- ฟังก์ชันค้นหาชื่อจากฐานข้อมูลกลาง ---
+    async function getNameFromDatabase(bib) {
+        try {
+            const res = await fetch(SCRIPT_URL);
+            const rows = await res.json();
+            // ค้นหาแถวที่เป็น REG และมี BIB ตรงกัน (เอาตัวล่าสุด)
+            const regRow = rows.slice(1).reverse().find(r => r[1] === 'REG' && String(r[2]).trim() === String(bib));
+            return regRow ? regRow[3] : "นักวิ่ง";
+        } catch(e) { return "นักวิ่ง"; }
+    }
+
+    // --- บันทึกจุด (Unique Tracking 100%) ---
     async function checkPoint(code) {
         const bib = document.getElementById('scanBib').value.trim();
         if(!bib) return alert('ระบุ BIB');
-        const name = localRunners[bib]?.name || 'นักวิ่ง';
+        showLoading(true);
+        const name = await getNameFromDatabase(bib); // ดึงจากฐานข้อมูลเสมอ
         const now = new Date();
+        
         if(!activeSession) {
             activeSession = { start: code, bib: bib, startTime: now.toISOString() };
             speak("เริ่มบันทึกจากจุด " + pointNames[code] + " คุณ " + name);
-            fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'record', bib: bib, name: name, start: code, end: code, distance: 0 }) });
+            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'record', bib: bib, name: name, start: code, end: code, distance: 0 }) });
         } else {
             const dist = Math.abs(distances[code] - distances[activeSession.start]);
-            if(dist === 0) return speak("อยู่ที่จุดเดิมค่ะ");
+            if(dist === 0) { showLoading(false); return speak("อยู่ที่จุดเดิมค่ะ"); }
             speak("ถึงจุด " + pointNames[code] + " ระยะ " + dist + " กิโลเมตร เก่งมากค่ะคุณ " + name);
-            showLoading(true);
             try {
                 await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'record', bib: bib, name: name, start: activeSession.start, end: code, distance: dist, startTime: activeSession.startTime }) });
                 activeSession = { start: code, bib: bib, startTime: now.toISOString() };
             } catch(e) {}
-            showLoading(false);
         }
+        showLoading(false);
     }
 
-    // --- ลงทะเบียน (ป้องกันซ้ำ) ---
+    // --- ลงทะเบียน ---
     document.getElementById('regForm').onsubmit = async (e) => {
         e.preventDefault();
         const bib = document.getElementById('regBib').value.trim();
         const name = document.getElementById('regName').value.trim();
         showLoading(true);
         try {
-            const res = await fetch(SCRIPT_URL);
-            const rows = await res.json();
-            const isDup = rows.slice(1).some(r => String(r[2]).trim() === String(bib));
-            if (isDup) {
-                showLoading(false);
-                speak("BIBนี้มีคนใช้แล้วค่ะ");
-                return alert("เลข BIB นี้มีผู้ใช้งานแล้วครับ");
-            }
             await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'register', bib: bib, name: name })});
-            localRunners[bib] = { name: name };
-            localStorage.setItem('runners_local', JSON.stringify(localRunners));
             document.getElementById('scanBib').value = bib;
-            speak("ลงทะเบียนสำเร็จค่ะ");
+            speak("ลงทะเบียนสำเร็จค่ะคุณ " + name);
             bootstrap.Tab.getOrCreateInstance(document.querySelector('button[data-bs-target="#tab-run"]')).show();
         } catch(e) {}
         showLoading(false);
     };
 
-    // --- สถิติส่วนตัว (ดึงชื่อล่าสุด + รางวัล) ---
+    // --- สถิติส่วนตัว (ดึงชื่อล่าสุดจาก Database) ---
     async function loadMyStats() {
         const inputBib = document.getElementById('myBibSearch').value.trim();
         if(!inputBib) return;
@@ -226,11 +225,13 @@
             const res = await fetch(SCRIPT_URL);
             const rows = await res.json();
             let totalDist = 0, name = "นักวิ่ง", histArray = [];
+            
+            // หาชื่อจากฐานข้อมูลกลาง (REG)
+            const regRow = rows.slice(1).reverse().find(r => r[1] === 'REG' && String(r[2]).trim() === String(inputBib));
+            if(regRow) name = regRow[3];
+
             const myRows = rows.slice(1).filter(r => String(r[2]).trim() === String(inputBib));
             if(myRows.length > 0) {
-                for(let i = myRows.length-1; i>=0; i--) { if(myRows[i][3]) { name = myRows[i][3]; break; } }
-                localRunners[inputBib] = { name: name };
-                localStorage.setItem('runners_local', JSON.stringify(localRunners));
                 myRows.forEach(r => {
                     if(r[1] === 'RUN') {
                         const dist = parseFloat(r[5] || 0); totalDist += dist;
@@ -256,7 +257,7 @@
                 if (totalDist >= 100) {
                     document.getElementById('myMedalDisplay').innerHTML = "🥇🏆🎆";
                     document.getElementById('btnCertGold').style.display = 'block';
-                    speak("ยินดีด้วยระดับเหรียญทองค่ะคุณ " + name + " ผู้พิชิต 100 กิโลเมตร");
+                    speak("คุณ " + name + " ผู้พิชิต 100 กิโลเมตร สุดยอดมากค่ะ");
                     playFireworkSound();
                 } else if (totalDist >= 50) {
                     document.getElementById('myMedalDisplay').innerHTML = "🥈✨";
@@ -288,20 +289,33 @@
         }
     }
 
+    // --- หน้าอันดับรวม (Top 30 + เสียงทักทายพิเศษ) ---
     async function fetchDataFromCloud() {
         showLoading(true);
         try {
             const res = await fetch(SCRIPT_URL);
             const rows = await res.json();
             let summary = {}, names = {}, grandTotal = 0;
+            
+            // ประมวลผลชื่อและระยะทาง
             rows.slice(1).forEach(r => {
-                const bib = String(r[2]).trim(), name = r[3], d = parseFloat(r[5] || 0);
-                if(bib && name) names[bib] = name;
-                if(r[1] === 'RUN') { summary[bib] = (summary[bib] || 0) + d; grandTotal += d; }
+                const bib = String(r[2]).trim(), type = r[1], val = r[3], d = parseFloat(r[5] || 0);
+                if(type === 'REG') names[bib] = val; // เก็บชื่อจาก REG เท่านั้น
+                if(type === 'RUN') { summary[bib] = (summary[bib] || 0) + d; grandTotal += d; }
             });
+            
             document.getElementById('grandTotalKm').innerText = grandTotal.toFixed(2);
-            const sorted = Object.entries(summary).sort((a,b) => b[1] - a[1]).slice(0, 20);
-            document.getElementById('top10Body').innerHTML = sorted.map(([bib, d], i) => `<tr><td>${i+1}</td><td><span class="badge bg-dark">${bib}</span></td><td><b>${names[bib]}</b></td><td class="text-end fw-bold text-primary">${d.toFixed(2)}</td></tr>`).join('');
+            
+            // จัดลำดับ Top 30
+            const sorted = Object.entries(summary).sort((a,b) => b[1] - a[1]).slice(0, 30);
+            document.getElementById('top10Body').innerHTML = sorted.map(([bib, d], i) => `<tr><td>${i+1}</td><td><span class="badge bg-dark">${bib}</span></td><td><b>${names[bib] || 'นักวิ่ง'}</b></td><td class="text-end fw-bold text-primary">${d.toFixed(2)}</td></tr>`).join('');
+            
+            // เสียงทักทายพิเศษเมื่อเข้าหน้าอันดับ
+            const currentBib = document.getElementById('scanBib').value || document.getElementById('myBibSearch').value;
+            if(currentBib && names[currentBib]) {
+                speak("เก่งมากค่ะ ลำดับของคุณ " + names[currentBib] + " ดีขึ้น มาสะสมระยะกันอีกนะคะ");
+            }
+
         } catch(e) {}
         showLoading(false);
     }
@@ -324,6 +338,7 @@
 </script>
 </body>
 </html>
+
 
 
 
