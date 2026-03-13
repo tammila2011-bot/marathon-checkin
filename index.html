@@ -347,7 +347,7 @@
     }
 
     function unlockAudio() {
-        const msg = new SpeechSynthesisUtterance('ไปด้วยกันนะค่ะ พร้อมลุยกันแล้วค่ะ');
+        const msg = new SpeechSynthesisUtterance('ไปด้วยกันค่ะ พร้อมออกกำลังกายกันแล้วค่ะ');
         msg.lang = 'th-TH'; window.speechSynthesis.speak(msg);
         document.getElementById('voiceBtn').innerText = "✅ ระบบเสียงทำงานแล้ว";
         document.getElementById('voiceBtn').className = "btn btn-outline-success btn-sm rounded-pill";
@@ -364,6 +364,7 @@
 </script>
 </body>
 </html>
+
 
 
 
