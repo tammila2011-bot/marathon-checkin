@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FREE RUN SUNNY 2026 - Master Unique Edition</title>
+    <title>FREE RUN SUNNY 2026 - Wow Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -22,11 +22,34 @@
         .btn-voice-unlock { background: #fff; border: 2px solid #6f42c1; color: #6f42c1; border-radius: 50px; padding: 5px 20px; font-weight: 600; font-size: 0.9rem; transition: 0.3s; }
         .cert-btn { display: none; margin-top: 15px; font-weight: 600; border-radius: 12px; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        /* สไตล์เพิ่มเติมสำหรับ Sunny Hub */
+        .hub-label { font-size: 0.8rem; font-weight: 600; color: #666; margin-top: 15px; margin-bottom: 8px; border-bottom: 1px solid #ddd; display: block; }
+        .btn-hub { font-weight: 600; border-radius: 12px; margin-bottom: 8px; border: none; }
     </style>
 </head>
 <body>
 
 <div id="loading" class="loading-overlay"><div class="spinner-border text-primary"></div></div>
+
+<div class="modal fade" id="newsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius: 20px;">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold text-primary">📢 ประกาศรายชื่อผู้ได้รับรางวัลเสื้อ</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <p class="mb-3">ขอแสดงความยินดีกับผู้พิชิต 104 กม. ทุกท่าน!</p>
+        <div class="alert alert-info py-2 small">
+            - คุณสมศรี (BIB 1001)<br>
+            - คุณมานะ (BIB 1004)<br>
+            - และผู้ที่สะสมระยะครบ 104 กม. ท่านอื่นๆ
+        </div>
+        <p class="small text-muted">กรุณาติดต่อรับรางวัลที่จุดเช็คอิน A นะคะ</p>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="container py-3">
     <div class="logo-container">
@@ -51,8 +74,23 @@
                 <form id="regForm">
                     <div class="mb-3"><label class="form-label small">เลข BIB</label><input type="text" id="regBib" class="form-control" required></div>
                     <div class="mb-3"><label class="form-label small">ชื่อเล่น/ฉายา</label><input type="text" id="regName" class="form-control" required></div>
-                    <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm">ลงทะเบียน</button>
+                    <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm mb-3">ลงทะเบียน</button>
                 </form>
+
+                <span class="hub-label">ศูนย์รวมข่าวสาร Sunny Hub</span>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-info btn-hub text-white shadow-sm" data-bs-toggle="modal" data-bs-target="#newsModal">📢 ข่าวสารกิจกรรม</button>
+                    <a href="https://business.facebook.com/latest/inbox/messenger?asset_id=227717641212296&business_id=1129171455895545&selected_item_id=100085677589277&thread_type=FB_MESSAGE&mailbox_id=" target="_blank" class="btn btn-success btn-hub shadow-sm">💬 ติดต่อทีมงาน (Messenger)</a>
+                    
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <a href="tel:053791426" class="btn btn-danger btn-sm w-100 fw-bold" style="border-radius:10px;">🆘 ตร.เชียงของ</a>
+                        </div>
+                        <div class="col-6">
+                            <a href="tel:053791199" class="btn btn-danger btn-sm w-100 fw-bold" style="border-radius:10px;">🆘 กู้ภัยเชียงของ</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -171,28 +209,27 @@
         try {
             const res = await fetch(SCRIPT_URL);
             const rows = await res.json();
-            // ค้นหาแถวที่เป็น REG และมี BIB ตรงกัน (เอาตัวล่าสุด)
             const regRow = rows.slice(1).reverse().find(r => r[1] === 'REG' && String(r[2]).trim() === String(bib));
             return regRow ? regRow[3] : "นักวิ่ง";
         } catch(e) { return "นักวิ่ง"; }
     }
 
-    // --- บันทึกจุด (Unique Tracking 100%) ---
+    // --- บันทึกจุด (Unique Tracking 100% + Wow Voice) ---
     async function checkPoint(code) {
         const bib = document.getElementById('scanBib').value.trim();
         if(!bib) return alert('ระบุ BIB');
         showLoading(true);
-        const name = await getNameFromDatabase(bib); // ดึงจากฐานข้อมูลเสมอ
+        const name = await getNameFromDatabase(bib);
         const now = new Date();
         
         if(!activeSession) {
             activeSession = { start: code, bib: bib, startTime: now.toISOString() };
-            speak("เริ่มบันทึกจากจุด " + pointNames[code] + " คุณ " + name);
+            speak("ยินดีต้อนรับเข้าสู่ครอบครัวซันนี่ค่ะคุณ " + name + " เริ่มบันทึกจากจุด " + pointNames[code] + " ขอให้สนุกกับการวิ่งนะคะ!");
             await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'record', bib: bib, name: name, start: code, end: code, distance: 0 }) });
         } else {
             const dist = Math.abs(distances[code] - distances[activeSession.start]);
-            if(dist === 0) { showLoading(false); return speak("อยู่ที่จุดเดิมค่ะ"); }
-            speak("ถึงจุด " + pointNames[code] + " ระยะ " + dist + " กิโลเมตร เก่งมากค่ะคุณ " + name);
+            if(dist === 0) { showLoading(false); return speak("อยู่ที่จุดเดิมค่ะคุณ " + name); }
+            speak("สุดยอดเลย! ถึงจุด " + pointNames[code] + " แล้ว ระยะสะสมเพิ่มอีก " + dist + " กิโลเมตร คุณ " + name + " แข็งแกร่งมากค่ะ!");
             try {
                 await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'record', bib: bib, name: name, start: activeSession.start, end: code, distance: dist, startTime: activeSession.startTime }) });
                 activeSession = { start: code, bib: bib, startTime: now.toISOString() };
@@ -201,7 +238,7 @@
         showLoading(false);
     }
 
-    // --- ลงทะเบียน ---
+    // --- ลงทะเบียน (Wow Voice) ---
     document.getElementById('regForm').onsubmit = async (e) => {
         e.preventDefault();
         const bib = document.getElementById('regBib').value.trim();
@@ -210,13 +247,13 @@
         try {
             await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'register', bib: bib, name: name })});
             document.getElementById('scanBib').value = bib;
-            speak("ลงทะเบียนสำเร็จค่ะคุณ " + name);
+            speak("ยินดีต้อนรับเข้าสู่ครอบครัวซันนี่ค่ะคุณ " + name + " ลงทะเบียนเรียบร้อย มาสร้างตำนานด้วยกันนะคะ!");
             bootstrap.Tab.getOrCreateInstance(document.querySelector('button[data-bs-target="#tab-run"]')).show();
         } catch(e) {}
         showLoading(false);
     };
 
-    // --- สถิติส่วนตัว (ดึงชื่อล่าสุดจาก Database) ---
+    // --- สถิติส่วนตัว (Wow Voice) ---
     async function loadMyStats() {
         const inputBib = document.getElementById('myBibSearch').value.trim();
         if(!inputBib) return;
@@ -225,8 +262,6 @@
             const res = await fetch(SCRIPT_URL);
             const rows = await res.json();
             let totalDist = 0, name = "นักวิ่ง", histArray = [];
-            
-            // หาชื่อจากฐานข้อมูลกลาง (REG)
             const regRow = rows.slice(1).reverse().find(r => r[1] === 'REG' && String(r[2]).trim() === String(inputBib));
             if(regRow) name = regRow[3];
 
@@ -257,19 +292,19 @@
                 if (totalDist >= 100) {
                     document.getElementById('myMedalDisplay').innerHTML = "🥇🏆🎆";
                     document.getElementById('btnCertGold').style.display = 'block';
-                    speak("คุณ " + name + " ผู้พิชิต 100 กิโลเมตร สุดยอดมากค่ะ");
+                    speak("วินาทีประวัติศาสตร์! ยินดีด้วยค่ะคุณ " + name + " คุณคือผู้พิชิต 100 กิโลเมตรคนใหม่ สุดยอดมากค่ะ");
                     playFireworkSound();
                 } else if (totalDist >= 50) {
                     document.getElementById('myMedalDisplay').innerHTML = "🥈✨";
                     document.getElementById('btnCertSilver').style.display = 'block';
-                    speak("ยินดีด้วยระดับเหรียญเงินค่ะคุณ " + name);
+                    speak("ยินดีด้วยระดับเหรียญเงินค่ะคุณ " + name + " อีกนิดเดียวจะครบ 100 แล้ว สู้ๆ ค่ะ");
                 } else if (totalDist >= 20) {
                     document.getElementById('myMedalDisplay').innerHTML = "🥉";
                     document.getElementById('btnCertBronze').style.display = 'block';
-                    speak("ยินดีด้วยระดับเหรียญทองแดงค่ะคุณ " + name);
+                    speak("ยินดีด้วยระดับเหรียญทองแดงค่ะคุณ " + name + " สะสมระยะต่อไปนะคะ");
                 } else {
                     document.getElementById('myMedalDisplay').innerHTML = "🏃‍♂️";
-                    speak("ดึงข้อมูลสำเร็จแล้วค่ะคุณ " + name);
+                    speak("ดึงข้อมูลสำเร็จแล้วค่ะคุณ " + name + " วันนี้คุณดูฟิตมากเลยนะคะ");
                 }
             } else { alert("ไม่พบข้อมูล BIB"); }
         } catch(e) {}
@@ -289,39 +324,31 @@
         }
     }
 
-    // --- หน้าอันดับรวม (Top 30 + เสียงทักทายพิเศษ) ---
     async function fetchDataFromCloud() {
         showLoading(true);
         try {
             const res = await fetch(SCRIPT_URL);
             const rows = await res.json();
             let summary = {}, names = {}, grandTotal = 0;
-            
-            // ประมวลผลชื่อและระยะทาง
             rows.slice(1).forEach(r => {
                 const bib = String(r[2]).trim(), type = r[1], val = r[3], d = parseFloat(r[5] || 0);
-                if(type === 'REG') names[bib] = val; // เก็บชื่อจาก REG เท่านั้น
+                if(type === 'REG') names[bib] = val;
                 if(type === 'RUN') { summary[bib] = (summary[bib] || 0) + d; grandTotal += d; }
             });
-            
             document.getElementById('grandTotalKm').innerText = grandTotal.toFixed(2);
-            
-            // จัดลำดับ Top 30
             const sorted = Object.entries(summary).sort((a,b) => b[1] - a[1]).slice(0, 30);
             document.getElementById('top10Body').innerHTML = sorted.map(([bib, d], i) => `<tr><td>${i+1}</td><td><span class="badge bg-dark">${bib}</span></td><td><b>${names[bib] || 'นักวิ่ง'}</b></td><td class="text-end fw-bold text-primary">${d.toFixed(2)}</td></tr>`).join('');
             
-            // เสียงทักทายพิเศษเมื่อเข้าหน้าอันดับ
             const currentBib = document.getElementById('scanBib').value || document.getElementById('myBibSearch').value;
             if(currentBib && names[currentBib]) {
-                speak("เก่งมากค่ะ ลำดับของคุณ " + names[currentBib] + " ดีขึ้น มาสะสมระยะกันอีกนะคะ");
+                speak("โอ้โห! ดูอันดับสิคะคุณ " + names[currentBib] + " พุ่งขึ้นมาแล้วนะ! อีกนิดเดียวจะแซงข้างหน้าแล้ว ลุยต่อเลยค่ะ!");
             }
-
         } catch(e) {}
         showLoading(false);
     }
 
     function unlockAudio() {
-        const msg = new SpeechSynthesisUtterance('พร้อมแล้วค่ะ');
+        const msg = new SpeechSynthesisUtterance('พร้อมลุยความว๊าวแล้วค่ะ');
         msg.lang = 'th-TH'; window.speechSynthesis.speak(msg);
         document.getElementById('voiceBtn').innerText = "✅ ระบบเสียงทำงานแล้ว";
         document.getElementById('voiceBtn').className = "btn btn-outline-success btn-sm rounded-pill";
@@ -338,6 +365,7 @@
 </script>
 </body>
 </html>
+
 
 
 
