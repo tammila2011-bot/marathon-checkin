@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FREE RUN SUNNY 2026 - Wow Edition</title>
+    <title>FREE RUN SUNNY 2026 - Master Wow Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -55,7 +55,12 @@
         <div class="alert alert-info py-2 small mt-2">
             <b>ผู้ได้รับรางวัลเสื้อ:</b> คุณขนุน (BIB 184)
         </div>
-      </div> </div> </div> </div> <div class="container py-3">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container py-3">
     <div class="logo-container">
         <img src="https://raw.githubusercontent.com/tammila2011-bot/marathon-checkin/main/loco.png" alt="FREE RUN SUNNY" class="main-logo shadow-sm">
     </div>
@@ -80,7 +85,6 @@
                     <div class="mb-3"><label class="form-label small">ชื่อเล่น/ฉายา</label><input type="text" id="regName" class="form-control" required></div>
                     <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm mb-3">ลงทะเบียน</button>
                 </form>
-
                 <span class="hub-label">ศูนย์รวมข่าวสาร Sunny Hub</span>
                 <div class="d-grid gap-2">
                     <button class="btn btn-info btn-hub text-white shadow-sm" data-bs-toggle="modal" data-bs-target="#newsModal">📢 ข่าวสารกิจกรรม</button>
@@ -218,12 +222,12 @@
         
         if(!activeSession) {
             activeSession = { start: code, bib: bib, startTime: now.toISOString() };
-            speak("ยินดีต้อนรับเข้าสู่ครอบครัวซันนี่ค่ะคุณ " + name + " เริ่มบันทึกจากจุด " + pointNames[code]);
+            speak("ยินดีต้อนรับเข้าสู่ครอบครัวซันนี่ค่ะคุณ " + name + " เริ่มจากจุด " + pointNames[code]);
             await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'record', bib: bib, name: name, start: code, end: code, distance: 0 }) });
         } else {
             const dist = Math.abs(distances[code] - distances[activeSession.start]);
             if(dist === 0) { showLoading(false); return speak("อยู่ที่จุดเดิมค่ะคุณ " + name); }
-            speak("ถึงจุด " + pointNames[code] + " แล้ว ระยะสะสมเพิ่มอีก " + dist + " กิโลเมตร");
+            speak("ถึงจุด " + pointNames[code] + " แล้ว ระยะเพิ่ม " + dist + " กิโลเมตร");
             try {
                 await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'record', bib: bib, name: name, start: activeSession.start, end: code, distance: dist, startTime: activeSession.startTime }) });
                 activeSession = { start: code, bib: bib, startTime: now.toISOString() };
@@ -246,6 +250,7 @@
         showLoading(false);
     };
 
+    // --- กู้คืนระบบ Pace ในหน้านี้ ---
     async function loadMyStats() {
         const inputBib = document.getElementById('myBibSearch').value.trim();
         if(!inputBib) return;
@@ -253,6 +258,7 @@
         try {
             const res = await fetch(SCRIPT_URL);
             const rows = await res.json();
+            
             let summary = {};
             rows.slice(1).forEach(r => {
                 if(r[1] === 'RUN') {
@@ -274,9 +280,23 @@
                     if(r[1] === 'RUN') {
                         const dist = parseFloat(r[5] || 0); totalDist += dist;
                         const d = new Date(r[0]), dStr = d.toLocaleDateString('th-TH',{day:'numeric',month:'short'}), tStr = d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
-                        histArray.unshift(`<div class="history-card shadow-sm border-start border-primary border-4"><div class="d-flex justify-content-between mb-1"><span class="text-primary fw-bold small">📅 ${dStr} | 🕒 ${tStr}น.</span><span class="text-success fw-bold">+${dist.toFixed(2)} กม.</span></div><div class="small text-muted text-start">📍 ${pointNames[r[4]] || r[4]} ➡️ ${pointNames[r[7]] || r[7]}</div></div>`);
+                        
+                        // --- ส่วนคำนวณ PACE ---
+                        let ps = "--:--";
+                        if (dist > 0 && r[6]) {
+                            const diff = new Date(r[0]) - new Date(r[6]); // เวลาต่าง (ms)
+                            if (diff > 0 && diff < 18000000) { // ไม่เกิน 5 ชม.
+                                const paceDecimal = (diff / 60000) / dist;
+                                const pMin = Math.floor(paceDecimal);
+                                const pSec = Math.round((paceDecimal - pMin) * 60);
+                                ps = pMin + ":" + pSec.toString().padStart(2, '0');
+                            }
+                        }
+                        
+                        histArray.unshift(`<div class="history-card shadow-sm border-start border-primary border-4"><div class="d-flex justify-content-between mb-1"><span class="text-primary fw-bold small">📅 ${dStr} | 🕒 ${tStr}น.</span><span class="badge bg-info text-dark">Pace ${ps}</span><span class="text-success fw-bold">+${dist.toFixed(2)} กม.</span></div><div class="small text-muted text-start">📍 ${pointNames[r[4]] || r[4]} ➡️ ${pointNames[r[7]] || r[7]}</div></div>`);
                     }
                 });
+                
                 document.getElementById('myRankDisplay').innerText = "🏆 อันดับที่ " + myRank;
                 document.getElementById('myNameDisplay').innerText = name;
                 document.getElementById('myDistDisplay').innerText = totalDist.toFixed(2);
@@ -288,7 +308,7 @@
                 if (totalDist >= 100) {
                     document.getElementById('myMedalDisplay').innerHTML = "🥇🏆🎆";
                     document.getElementById('btnCertGold').style.display = 'block';
-                    speak("วินาทีประวัติศาสตร์! คุณอยู่อันดับที่ " + myRank + " สุดยอดมากค่ะคุณ " + name);
+                    speak("วินาทีประวัติศาสตร์! คุณอยู่อันดับที่ " + myRank + " เก่งมากค่ะคุณ " + name);
                 } else {
                     document.getElementById('myMedalDisplay').innerHTML = "🏃‍♂️";
                     if (totalDist >= 50) document.getElementById('btnCertSilver').style.display = 'block';
