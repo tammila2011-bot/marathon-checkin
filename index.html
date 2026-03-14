@@ -35,25 +35,27 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content" style="border-radius: 20px;">
       <div class="modal-header border-0">
-        <h5 class="modal-title fw-bold text-primary">📢 ประกาศรายชื่อผู้ได้รับใบเกียรติบัตรและรางวัลเสื้อ 104 Km.</h5>
+        <h5 class="modal-title fw-bold text-primary">📢 คู่มือและประกาศรางวัล 104 Km.</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body text-start"> <h6 class="fw-bold text-primary">🏃‍♂️ วิธีร่วมสนุก:</h6>
-  <ol class="small">
-    <li>กด <b>"เปิดระบบเสียง"</b> เพื่อฟัง AI เรียกชื่อ</li>
-    <li>ลงทะเบียนด้วย BIB และชื่อเล่น</li>
-    <li>สแกน QR ตามจุด A-F แล้วกดบันทึก</li>
-    <li>เช็กอันดับตัวเองได้ที่เมนู <b>"สถิติฉัน"</b></li>
-  </ol>
-  <hr>
-  <h6 class="fw-bold text-success">🎁 รางวัลผู้พิชิต:</h6>
-  <ul class="small">
-    <li>🥉 20 กม. | 🥈 50 กม. | 🥇 100 กม.</li>
-    <li>พิชิต 104 กม. รับเสื้อที่เทศบาลเวียงเชียงของ</li>
-  </ul>
-</div>
-
-<div class="container py-3">
+      <div class="modal-body text-start"> 
+        <h6 class="fw-bold text-primary">🏃‍♂️ วิธีร่วมสนุก:</h6>
+        <ol class="small">
+          <li>กด <b>"เปิดระบบเสียง"</b> เพื่อฟัง AI เรียกชื่อ</li>
+          <li>ลงทะเบียนด้วย BIB และชื่อเล่น</li>
+          <li>สแกน QR ตามจุด A-F แล้วกดบันทึก</li>
+          <li>เช็กอันดับตัวเองได้ที่เมนู <b>"สถิติฉัน"</b></li>
+        </ol>
+        <hr>
+        <h6 class="fw-bold text-success">🎁 รางวัลผู้พิชิต:</h6>
+        <ul class="small">
+          <li>🥉 20 กม. | 🥈 50 กม. | 🥇 100 กม.</li>
+          <li>พิชิต 104 กม. รับเสื้อที่เทศบาลเวียงเชียงของ</li>
+        </ul>
+        <div class="alert alert-info py-2 small mt-2">
+            <b>ผู้ได้รับรางวัลเสื้อ:</b> คุณขนุน (BIB 184)
+        </div>
+      </div> </div> </div> </div> <div class="container py-3">
     <div class="logo-container">
         <img src="https://raw.githubusercontent.com/tammila2011-bot/marathon-checkin/main/loco.png" alt="FREE RUN SUNNY" class="main-logo shadow-sm">
     </div>
@@ -78,6 +80,7 @@
                     <div class="mb-3"><label class="form-label small">ชื่อเล่น/ฉายา</label><input type="text" id="regName" class="form-control" required></div>
                     <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm mb-3">ลงทะเบียน</button>
                 </form>
+
                 <span class="hub-label">ศูนย์รวมข่าวสาร Sunny Hub</span>
                 <div class="d-grid gap-2">
                     <button class="btn btn-info btn-hub text-white shadow-sm" data-bs-toggle="modal" data-bs-target="#newsModal">📢 ข่าวสารกิจกรรม</button>
@@ -164,7 +167,6 @@
     
     let html5QrCode, activeSession = null;
 
-    // --- ฟังก์ชันช่วยเหลือ (เหมือนเดิม) ---
     async function startScanner() {
         try {
             const cams = await Html5Qrcode.getCameras();
@@ -244,7 +246,6 @@
         showLoading(false);
     };
 
-    // --- สถิติส่วนตัว (ปรับปรุง: เพิ่มการคำนวณอันดับ) ---
     async function loadMyStats() {
         const inputBib = document.getElementById('myBibSearch').value.trim();
         if(!inputBib) return;
@@ -252,8 +253,6 @@
         try {
             const res = await fetch(SCRIPT_URL);
             const rows = await res.json();
-            
-            // 1. คำนวณอันดับของทุกคนก่อน
             let summary = {};
             rows.slice(1).forEach(r => {
                 if(r[1] === 'RUN') {
@@ -265,7 +264,6 @@
             const rankIndex = sortedEntries.findIndex(([bib]) => bib === String(inputBib));
             const myRank = rankIndex !== -1 ? rankIndex + 1 : "--";
 
-            // 2. ดึงข้อมูลส่วนตัว
             let totalDist = 0, name = "นักวิ่ง", histArray = [];
             const regRow = rows.slice(1).reverse().find(r => r[1] === 'REG' && String(r[2]).trim() === String(inputBib));
             if(regRow) name = regRow[3];
@@ -279,7 +277,6 @@
                         histArray.unshift(`<div class="history-card shadow-sm border-start border-primary border-4"><div class="d-flex justify-content-between mb-1"><span class="text-primary fw-bold small">📅 ${dStr} | 🕒 ${tStr}น.</span><span class="text-success fw-bold">+${dist.toFixed(2)} กม.</span></div><div class="small text-muted text-start">📍 ${pointNames[r[4]] || r[4]} ➡️ ${pointNames[r[7]] || r[7]}</div></div>`);
                     }
                 });
-                
                 document.getElementById('myRankDisplay').innerText = "🏆 อันดับที่ " + myRank;
                 document.getElementById('myNameDisplay').innerText = name;
                 document.getElementById('myDistDisplay').innerText = totalDist.toFixed(2);
@@ -287,7 +284,6 @@
                 document.getElementById('myHistoryList').innerHTML = `<h6 class="fw-bold mb-2 small mt-3 text-secondary text-start">ประวัติล่าสุด:</h6>` + (histArray.slice(0, 10).join(''));
                 document.getElementById('myResultArea').style.display = 'block';
 
-                // จัดการเหรียญ
                 document.querySelectorAll('.cert-btn').forEach(b => b.style.display = 'none');
                 if (totalDist >= 100) {
                     document.getElementById('myMedalDisplay').innerHTML = "🥇🏆🎆";
@@ -323,7 +319,7 @@
     }
 
     function unlockAudio() {
-        speak('ระบบเสียงพร้อมทำงานแล้วค่ะ');
+        speak('ระบบเสียงพร้อมทำงานแล้วค่ะ ไปด้วยกันนะคะ');
         document.getElementById('voiceBtn').innerText = "✅ ระบบเสียงทำงานแล้ว";
         document.getElementById('voiceBtn').className = "btn btn-outline-success btn-sm rounded-pill";
     }
