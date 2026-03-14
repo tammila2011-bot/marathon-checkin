@@ -21,8 +21,8 @@
         .history-card { border-radius: 12px; border: 1px solid #eee; background: #fff; padding: 10px; margin-bottom: 8px; font-size: 0.85rem; }
         .btn-voice-unlock { background: #fff; border: 2px solid #6f42c1; color: #6f42c1; border-radius: 50px; padding: 5px 20px; font-weight: 600; font-size: 0.9rem; transition: 0.3s; }
         .cert-btn { display: none; margin-top: 15px; font-weight: 600; border-radius: 12px; animation: pulse 2s infinite; }
+        .rank-badge { background: #6f42c1; color: white; padding: 5px 15px; border-radius: 50px; font-size: 0.9rem; font-weight: 600; display: inline-block; margin-bottom: 10px; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        /* สไตล์เพิ่มเติมสำหรับ Sunny Hub */
         .hub-label { font-size: 0.8rem; font-weight: 600; color: #666; margin-top: 15px; margin-bottom: 8px; border-bottom: 1px solid #ddd; display: block; }
         .btn-hub { font-weight: 600; border-radius: 12px; margin-bottom: 8px; border: none; }
     </style>
@@ -42,7 +42,6 @@
         <p class="mb-3">ขอแสดงความยินดีกับผู้พิชิต 104 กม. ทุกท่าน!</p>
         <div class="alert alert-info py-2 small">
             - คุณขนุน (BIB 184)<br>
-            
         </div>
         <p class="small text-muted">กรุณาติดต่อรับรางวัลที่เทศบาลเวียงเชียงของ นะคะ</p>
       </div>
@@ -75,19 +74,13 @@
                     <div class="mb-3"><label class="form-label small">ชื่อเล่น/ฉายา</label><input type="text" id="regName" class="form-control" required></div>
                     <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm mb-3">ลงทะเบียน</button>
                 </form>
-
                 <span class="hub-label">ศูนย์รวมข่าวสาร Sunny Hub</span>
                 <div class="d-grid gap-2">
                     <button class="btn btn-info btn-hub text-white shadow-sm" data-bs-toggle="modal" data-bs-target="#newsModal">📢 ข่าวสารกิจกรรม</button>
-                    <a href="https://business.facebook.com/latest/inbox/messenger?asset_id=227717641212296&business_id=1129171455895545&selected_item_id=100085677589277&thread_type=FB_MESSAGE&mailbox_id=" target="_blank" class="btn btn-success btn-hub shadow-sm">💬 ติดต่อทีมงาน (Messenger)</a>
-                    
+                    <a href="https://m.me/YourPageID" target="_blank" class="btn btn-success btn-hub shadow-sm">💬 ติดต่อทีมงาน (Messenger)</a>
                     <div class="row g-2">
-                        <div class="col-6">
-                            <a href="tel:053791426" class="btn btn-danger btn-sm w-100 fw-bold" style="border-radius:10px;">🆘 ตร.เชียงของ</a>
-                        </div>
-                        <div class="col-6">
-                            <a href="tel:053791199" class="btn btn-danger btn-sm w-100 fw-bold" style="border-radius:10px;">🆘 กู้ภัยเชียงของ</a>
-                        </div>
+                        <div class="col-6"><a href="tel:053791426" class="btn btn-danger btn-sm w-100 fw-bold" style="border-radius:10px;">🆘 ตร.เชียงของ</a></div>
+                        <div class="col-6"><a href="tel:053791199" class="btn btn-danger btn-sm w-100 fw-bold" style="border-radius:10px;">🆘 กู้ภัยเชียงของ</a></div>
                     </div>
                 </div>
             </div>
@@ -134,6 +127,7 @@
                     <button class="btn btn-primary" onclick="loadMyStats()">ดูสถิติ</button>
                 </div>
                 <div id="myResultArea" style="display:none;">
+                    <div id="myRankDisplay" class="rank-badge">🏆 อันดับที่ --</div>
                     <h5 id="myNameDisplay" class="fw-bold text-primary mb-1">-</h5>
                     <div id="myMedalDisplay" style="font-size:3rem; margin:10px 0;">🏃‍♂️</div>
                     
@@ -166,7 +160,7 @@
     
     let html5QrCode, activeSession = null;
 
-    // --- กล้อง ---
+    // --- ฟังก์ชันช่วยเหลือ (เหมือนเดิม) ---
     async function startScanner() {
         try {
             const cams = await Html5Qrcode.getCameras();
@@ -178,10 +172,7 @@
                     try {
                         const url = new URL(text);
                         const p = url.searchParams.get("point");
-                        if (p && pointNames[p]) {
-                            handleScannedPoint(p);
-                            stopScanner();
-                        }
+                        if (p && pointNames[p]) { handleScannedPoint(p); stopScanner(); }
                     } catch(e) {}
                 });
             }
@@ -203,7 +194,6 @@
         if (btn) { btn.style.display = 'block'; document.getElementById('scanStatus').innerText = "📍 พบจุด: " + pointNames[p]; }
     }
 
-    // --- ฟังก์ชันค้นหาชื่อจากฐานข้อมูลกลาง ---
     async function getNameFromDatabase(bib) {
         try {
             const res = await fetch(SCRIPT_URL);
@@ -213,7 +203,6 @@
         } catch(e) { return "นักวิ่ง"; }
     }
 
-    // --- บันทึกจุด (Unique Tracking 100% + Wow Voice) ---
     async function checkPoint(code) {
         const bib = document.getElementById('scanBib').value.trim();
         if(!bib) return alert('ระบุ BIB');
@@ -223,12 +212,12 @@
         
         if(!activeSession) {
             activeSession = { start: code, bib: bib, startTime: now.toISOString() };
-            speak("ยินดีต้อนรับเข้าสู่ครอบครัวซันนี่ค่ะคุณ " + name + " เริ่มบันทึกจากจุด " + pointNames[code] + " ขอให้สนุกกับการวิ่งนะคะ!");
+            speak("ยินดีต้อนรับเข้าสู่ครอบครัวซันนี่ค่ะคุณ " + name + " เริ่มบันทึกจากจุด " + pointNames[code]);
             await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'record', bib: bib, name: name, start: code, end: code, distance: 0 }) });
         } else {
             const dist = Math.abs(distances[code] - distances[activeSession.start]);
             if(dist === 0) { showLoading(false); return speak("อยู่ที่จุดเดิมค่ะคุณ " + name); }
-            speak("สุดยอดเลย! ถึงจุด " + pointNames[code] + " แล้ว ระยะสะสมเพิ่มอีก " + dist + " กิโลเมตร คุณ " + name + " แข็งแกร่งมากค่ะ!");
+            speak("ถึงจุด " + pointNames[code] + " แล้ว ระยะสะสมเพิ่มอีก " + dist + " กิโลเมตร");
             try {
                 await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'record', bib: bib, name: name, start: activeSession.start, end: code, distance: dist, startTime: activeSession.startTime }) });
                 activeSession = { start: code, bib: bib, startTime: now.toISOString() };
@@ -237,7 +226,6 @@
         showLoading(false);
     }
 
-    // --- ลงทะเบียน (Wow Voice) ---
     document.getElementById('regForm').onsubmit = async (e) => {
         e.preventDefault();
         const bib = document.getElementById('regBib').value.trim();
@@ -246,13 +234,13 @@
         try {
             await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'register', bib: bib, name: name })});
             document.getElementById('scanBib').value = bib;
-            speak("ยินดีต้อนรับเข้าสู่ครอบครัวซันนี่ค่ะคุณ " + name + " ลงทะเบียนเรียบร้อย มาสร้างตำนานด้วยกันนะคะ!");
+            speak("ลงทะเบียนเรียบร้อย มาสร้างตำนานด้วยกันนะคะคุณ " + name);
             bootstrap.Tab.getOrCreateInstance(document.querySelector('button[data-bs-target="#tab-run"]')).show();
         } catch(e) {}
         showLoading(false);
     };
 
-    // --- สถิติส่วนตัว (Wow Voice) ---
+    // --- สถิติส่วนตัว (ปรับปรุง: เพิ่มการคำนวณอันดับ) ---
     async function loadMyStats() {
         const inputBib = document.getElementById('myBibSearch').value.trim();
         if(!inputBib) return;
@@ -260,6 +248,20 @@
         try {
             const res = await fetch(SCRIPT_URL);
             const rows = await res.json();
+            
+            // 1. คำนวณอันดับของทุกคนก่อน
+            let summary = {};
+            rows.slice(1).forEach(r => {
+                if(r[1] === 'RUN') {
+                    const b = String(r[2]).trim();
+                    summary[b] = (summary[b] || 0) + parseFloat(r[5] || 0);
+                }
+            });
+            const sortedEntries = Object.entries(summary).sort((a,b) => b[1] - a[1]);
+            const rankIndex = sortedEntries.findIndex(([bib]) => bib === String(inputBib));
+            const myRank = rankIndex !== -1 ? rankIndex + 1 : "--";
+
+            // 2. ดึงข้อมูลส่วนตัว
             let totalDist = 0, name = "นักวิ่ง", histArray = [];
             const regRow = rows.slice(1).reverse().find(r => r[1] === 'REG' && String(r[2]).trim() === String(inputBib));
             if(regRow) name = regRow[3];
@@ -270,57 +272,32 @@
                     if(r[1] === 'RUN') {
                         const dist = parseFloat(r[5] || 0); totalDist += dist;
                         const d = new Date(r[0]), dStr = d.toLocaleDateString('th-TH',{day:'numeric',month:'short'}), tStr = d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
-                        let ps = "--:--";
-                        if (dist > 0 && r[6]) {
-                            const diff = new Date(r[0]) - new Date(r[6]);
-                            if (diff > 0 && diff < 18000000) {
-                                const pd = (diff / 60000) / dist;
-                                ps = Math.floor(pd) + ":" + Math.round((pd % 1) * 60).toString().padStart(2, '0');
-                            }
-                        }
-                        histArray.unshift(`<div class="history-card shadow-sm border-start border-primary border-4"><div class="d-flex justify-content-between mb-1"><span class="text-primary fw-bold small">📅 ${dStr} | 🕒 ${tStr}น.</span><span class="badge bg-info text-dark">Pace ${ps}</span><span class="text-success fw-bold">+${dist.toFixed(2)} กม.</span></div><div class="small text-muted text-start">📍 ${pointNames[r[4]] || r[4]} ➡️ ${pointNames[r[7]] || r[7]}</div></div>`);
+                        histArray.unshift(`<div class="history-card shadow-sm border-start border-primary border-4"><div class="d-flex justify-content-between mb-1"><span class="text-primary fw-bold small">📅 ${dStr} | 🕒 ${tStr}น.</span><span class="text-success fw-bold">+${dist.toFixed(2)} กม.</span></div><div class="small text-muted text-start">📍 ${pointNames[r[4]] || r[4]} ➡️ ${pointNames[r[7]] || r[7]}</div></div>`);
                     }
                 });
+                
+                document.getElementById('myRankDisplay').innerText = "🏆 อันดับที่ " + myRank;
                 document.getElementById('myNameDisplay').innerText = name;
                 document.getElementById('myDistDisplay').innerText = totalDist.toFixed(2);
                 document.getElementById('myProgressBar').style.width = Math.min(totalDist, 100) + '%';
                 document.getElementById('myHistoryList').innerHTML = `<h6 class="fw-bold mb-2 small mt-3 text-secondary text-start">ประวัติล่าสุด:</h6>` + (histArray.slice(0, 10).join(''));
                 document.getElementById('myResultArea').style.display = 'block';
 
+                // จัดการเหรียญ
                 document.querySelectorAll('.cert-btn').forEach(b => b.style.display = 'none');
                 if (totalDist >= 100) {
                     document.getElementById('myMedalDisplay').innerHTML = "🥇🏆🎆";
                     document.getElementById('btnCertGold').style.display = 'block';
-                    speak("วินาทีประวัติศาสตร์! ยินดีด้วยค่ะคุณ " + name + " คุณคือผู้พิชิต 100 กิโลเมตรคนใหม่ สุดยอดมากค่ะ");
-                    playFireworkSound();
-                } else if (totalDist >= 50) {
-                    document.getElementById('myMedalDisplay').innerHTML = "🥈✨";
-                    document.getElementById('btnCertSilver').style.display = 'block';
-                    speak("ยินดีด้วยระดับเหรียญเงินค่ะคุณ " + name + " อีกนิดเดียวจะครบ 100 แล้ว สู้ๆ ค่ะ");
-                } else if (totalDist >= 20) {
-                    document.getElementById('myMedalDisplay').innerHTML = "🥉";
-                    document.getElementById('btnCertBronze').style.display = 'block';
-                    speak("ยินดีด้วยระดับเหรียญทองแดงค่ะคุณ " + name + " สะสมระยะต่อไปนะคะ");
+                    speak("วินาทีประวัติศาสตร์! คุณอยู่อันดับที่ " + myRank + " สุดยอดมากค่ะคุณ " + name);
                 } else {
                     document.getElementById('myMedalDisplay').innerHTML = "🏃‍♂️";
-                    speak("ดึงข้อมูลสำเร็จแล้วค่ะคุณ " + name + " วันนี้คุณดูฟิตมากเลยนะคะ");
+                    if (totalDist >= 50) document.getElementById('btnCertSilver').style.display = 'block';
+                    else if (totalDist >= 20) document.getElementById('btnCertBronze').style.display = 'block';
+                    speak("ขณะนี้คุณอยู่อันดับที่ " + myRank + " สู้ๆ นะคะคุณ " + name);
                 }
             } else { alert("ไม่พบข้อมูล BIB"); }
-        } catch(e) {}
+        } catch(e) { console.error(e); }
         showLoading(false);
-    }
-
-    function playFireworkSound() {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        for(let i=0; i<3; i++) {
-            setTimeout(() => {
-                const osc = audioCtx.createOscillator(); const gn = audioCtx.createGain();
-                osc.type = 'square'; osc.connect(gn); gn.connect(audioCtx.destination);
-                osc.frequency.setValueAtTime(100, audioCtx.currentTime); gn.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                gn.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.2);
-                osc.start(); osc.stop(audioCtx.currentTime + 1.2);
-            }, i * 600);
-        }
     }
 
     async function fetchDataFromCloud() {
@@ -337,18 +314,12 @@
             document.getElementById('grandTotalKm').innerText = grandTotal.toFixed(2);
             const sorted = Object.entries(summary).sort((a,b) => b[1] - a[1]).slice(0, 30);
             document.getElementById('top10Body').innerHTML = sorted.map(([bib, d], i) => `<tr><td>${i+1}</td><td><span class="badge bg-dark">${bib}</span></td><td><b>${names[bib] || 'นักวิ่ง'}</b></td><td class="text-end fw-bold text-primary">${d.toFixed(2)}</td></tr>`).join('');
-            
-            const currentBib = document.getElementById('scanBib').value || document.getElementById('myBibSearch').value;
-            if(currentBib && names[currentBib]) {
-                speak("โอ้โห! ดูอันดับสิคะคุณ " + names[currentBib] + " พุ่งขึ้นมาแล้วนะ! อีกนิดเดียวจะแซงข้างหน้าแล้ว ลุยต่อเลยค่ะ!");
-            }
         } catch(e) {}
         showLoading(false);
     }
 
     function unlockAudio() {
-        const msg = new SpeechSynthesisUtterance('ไปด้วยกันค่ะ พร้อมออกกำลังกายกันแล้วค่ะ');
-        msg.lang = 'th-TH'; window.speechSynthesis.speak(msg);
+        speak('ระบบเสียงพร้อมทำงานแล้วค่ะ');
         document.getElementById('voiceBtn').innerText = "✅ ระบบเสียงทำงานแล้ว";
         document.getElementById('voiceBtn').className = "btn btn-outline-success btn-sm rounded-pill";
     }
