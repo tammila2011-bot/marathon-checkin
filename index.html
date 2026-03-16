@@ -333,23 +333,25 @@
             ctx.drawImage(img, 0, 0);
             
             ctx.textAlign = 'center';
-            ctx.fillStyle = '#FFFFFF'; // สีขาว
+            ctx.fillStyle = '#FFFFFF'; // สีขาวบริสุทธิ์
             
-            // 1. ชื่อนักวิ่ง
+            // 1. ชื่อนักวิ่ง (อยู่ที่เดิม สวยแล้ว)
             const name = document.getElementById('myNameDisplay').innerText;
-            ctx.font = 'bold 80px "Prompt", sans-serif'; 
-            ctx.fillText(name, canvas.width / 2, canvas.height * 0.485); 
+            ctx.font = 'bold 85px "Prompt", sans-serif'; 
+            ctx.fillText(name, canvas.width / 2, canvas.height * 0.465); 
             
-            // 2. ระยะทาง (ปรับพิกัด X ให้เลื่อนมาทางซ้าย)
+            // 2. ระยะทาง (ดึงลงมาข้างล่าง และขยับซ้าย)
             const dist = document.getElementById('myDistDisplay').innerText;
             ctx.font = 'bold 75px "Prompt", sans-serif';
-            ctx.fillText(dist, canvas.width * 0.355, canvas.height * 0.612); // แก้ตรงนี้ครับ
+            // ปรับ 0.355 (X) และ 0.795 (Y) เพื่อให้อยู่ในช่อง "ระยะทางสะสม"
+            ctx.fillText(dist, canvas.width * 0.355, canvas.height * 0.795); 
             
-            // 3. วันที่ปัจจุบัน
+            // 3. วันที่ (ดึงลงมาข้างล่าง และขยับขวา)
             const d = new Date();
             const dateStr = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
             ctx.font = '45px "Prompt", sans-serif';
-            ctx.fillText(dateStr, canvas.width * 0.655, canvas.height * 0.732); 
+            // ปรับ 0.655 (X) และ 0.795 (Y) เพื่อให้อยู่หลังคำว่า "วันที่"
+            ctx.fillText(dateStr, canvas.width * 0.655, canvas.height * 0.795); 
 
             const dataUrl = canvas.toDataURL('image/png');
             showLoading(false);
@@ -360,7 +362,7 @@
         };
         img.onerror = function() {
             showLoading(false);
-            alert("ไม่สามารถดึงรูปใบประกาศได้ กรุณาลองใหม่ภายหลัง");
+            alert("ไม่สามารถดึงรูปใบประกาศได้");
         };
     }
 
