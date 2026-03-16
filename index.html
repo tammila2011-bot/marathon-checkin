@@ -340,16 +340,16 @@
             ctx.font = 'bold 85px "Prompt", sans-serif'; 
             ctx.fillText(name, canvas.width / 2, canvas.height * 0.465); 
             
-            // 2. ระยะทาง (ขยับซ้าย 0.35 และดิ่งลง 0.62)
+            // 2. ระยะทาง (ดิ่งลงมาที่ 0.780 และขยับซ้าย 0.355)
             const dist = document.getElementById('myDistDisplay').innerText;
             ctx.font = 'bold 75px "Prompt", sans-serif';
-            ctx.fillText(dist, canvas.width * 0.350, canvas.height * 0.620); 
+            ctx.fillText(dist, canvas.width * 0.355, canvas.height * 0.780); 
             
-            // 3. วันที่ปัจจุบัน (ขยับขวา 0.68 และดิ่งลง 0.62 ให้ขนานกับระยะทาง)
+            // 3. วันที่ปัจจุบัน (ดิ่งลงมาที่ 0.780 ขนานกับระยะทาง และขยับขวา 0.655)
             const d = new Date();
             const dateStr = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
             ctx.font = '45px "Prompt", sans-serif';
-            ctx.fillText(dateStr, canvas.width * 0.680, canvas.height * 0.620); 
+            ctx.fillText(dateStr, canvas.width * 0.655, canvas.height * 0.780); 
 
             const dataUrl = canvas.toDataURL('image/png');
             showLoading(false);
