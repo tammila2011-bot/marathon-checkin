@@ -139,11 +139,12 @@
                     <h5 id="myNameDisplay" class="fw-bold text-primary mb-1">-</h5>
                     <div id="myMedalDisplay" style="font-size:3rem; margin:10px 0;">🏃‍♂️</div>
                     
-                    <div id="certArea">
-                        <a id="btnCertBronze" href="#" class="btn btn-warning cert-btn w-100 shadow-sm" style="background:#cd7f32; border:none; color:white;">📜 รับเกียรติบัตร 20 กม.</a>
-                        <a id="btnCertSilver" href="#" class="btn btn-secondary cert-btn w-100 shadow-sm" style="background:#c0c0c0; border:none; color:white;">📜 รับเกียรติบัตร 50 กม.</a>
-                        <a id="btnCertGold" href="#" class="btn btn-warning cert-btn w-100 shadow-sm" style="background:#ffd700; border:none; color:black;">📜 รับเกียรติบัตรผู้พิชิต 100 กม.</a>
-                    </div>
+                    <div id="certArea" class="mt-3" style="display:none;">
+    <button onclick="generateCertificate()" class="btn btn-warning w-100 shadow-sm fw-bold p-3" style="border-radius:15px; background: linear-gradient(45deg, #ffd700, #ff8c00); border:none; color:white; animation: pulse 2s infinite;">
+        📜 รับเกียรติบัตรออนไลน์ (แชร์ลงโซเชียล)
+    </button>
+    <canvas id="certCanvas" style="display:none;"></canvas>
+</div>
 
                     <div class="px-3 mt-3">
                         <div class="progress" style="height:12px; background:#eee; border-radius:10px; margin:10px 0;">
