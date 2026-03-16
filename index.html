@@ -139,56 +139,7 @@
                     <div id="myMedalDisplay" style="font-size:3rem; margin:10px 0;">🏃‍♂️</div>
                      
                     <div id="certArea" class="mt-3" style="display:none;">
-                        <button onclick="// ฟังก์ชันสร้างใบประกาศออนไลน์ (เวอร์ชันจูนตำแหน่งและสีขาว)
-    async function generateCertificate() {
-        showLoading(true);
-        const canvas = document.getElementById('certCanvas');
-        const ctx = canvas.getContext('2d');
-        const img = new Image();
-        
-        img.crossOrigin = "anonymous"; 
-        img.src = 'https://raw.githubusercontent.com/tammila2011-bot/marathon-checkin/main/Certificate.png'; 
-
-        img.onload = function() {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-            
-            ctx.textAlign = 'center';
-            // --- แก้ไขจุดที่ 1: เปลี่ยนสีตัวอักษรเป็นสีขาว ---
-            ctx.fillStyle = '#FFFFFF'; 
-            
-            // 1. ชื่อนักวิ่ง
-            const name = document.getElementById('myNameDisplay').innerText;
-            ctx.font = 'bold 80px "Prompt", sans-serif'; 
-            // --- แก้ไขจุดที่ 2: ปรับตำแหน่งชื่อ (เลื่อนลงนิดหน่อย) ---
-            ctx.fillText(name, canvas.width / 2, canvas.height * 0.505); 
-            
-            // 2. ระยะทาง
-            const dist = document.getElementById('myDistDisplay').innerText;
-            ctx.font = 'bold 75px "Prompt", sans-serif';
-            // --- แก้ไขจุดที่ 3: ปรับตำแหน่งระยะทาง (เยื้องซ้าย) ---
-            ctx.fillText(dist, canvas.width * 0.355, canvas.height * 0.635); 
-            
-            // 3. วันที่ปัจจุบัน
-            const d = new Date();
-            const dateStr = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
-            ctx.font = '45px "Prompt", sans-serif';
-            // --- แก้ไขจุดที่ 4: ปรับตำแหน่งวันที่ (เยื้องขวา) ---
-            ctx.fillText(dateStr, canvas.width * 0.640, canvas.height * 0.635); 
-
-            const dataUrl = canvas.toDataURL('image/png');
-            showLoading(false);
-            
-            const win = window.open();
-            win.document.write('<title>ใบเกียรติบัตรของคุณ ' + name + '</title>');
-            win.document.write('<body style="margin:0; background:#333; display:flex; justify-content:center; align-items:center;"><img src="' + dataUrl + '" style="max-width:100%; box-shadow:0 0 20px rgba(0,0,0,0.5);"></body>');
-        };
-        img.onerror = function() {
-            showLoading(false);
-            alert("ไม่สามารถดึงรูปใบประกาศได้ กรุณาลองใหม่ภายหลัง");
-        };
-    }" class="btn btn-warning w-100 shadow-sm fw-bold p-3" style="border-radius:15px; background: linear-gradient(45deg, #ffd700, #ff8c00); border:none; color:white; animation: pulse 2s infinite;">
+                        <button onclick="generateCertificate()" class="btn btn-warning w-100 shadow-sm fw-bold p-3" style="border-radius:15px; background: linear-gradient(45deg, #ffd700, #ff8c00); border:none; color:white; animation: pulse 2s infinite;">
                             📜 รับเกียรติบัตรออนไลน์ (แชร์ลงโซเชียล)
                         </button>
                         <canvas id="certCanvas" style="display:none;"></canvas>
@@ -350,7 +301,7 @@
                 document.getElementById('myHistoryList').innerHTML = `<h6 class="fw-bold mb-2 small mt-3 text-secondary text-start">ประวัติล่าสุด:</h6>` + (histArray.slice(0, 10).join(''));
                 document.getElementById('myResultArea').style.display = 'block';
 
-                // โชว์ปุ่มใบประกาศเสมอเพื่อความภูมิใจ
+                // โชว์ปุ่มใบประกาศ
                 document.getElementById('certArea').style.display = 'block';
 
                 if (totalDist >= 100) {
@@ -366,14 +317,13 @@
         showLoading(false);
     }
 
-    // ฟังก์ชันสร้างใบประกาศออนไลน์
+    // --- ฟังก์ชันสร้างใบประกาศออนไลน์ (ย้ายมาอยู่นี่แล้วครับ) ---
     async function generateCertificate() {
         showLoading(true);
         const canvas = document.getElementById('certCanvas');
         const ctx = canvas.getContext('2d');
         const img = new Image();
         
-        // รูปใบประกาศของอาจารย์
         img.crossOrigin = "anonymous"; 
         img.src = 'https://raw.githubusercontent.com/tammila2011-bot/marathon-checkin/main/Certificate.png'; 
 
@@ -383,28 +333,27 @@
             ctx.drawImage(img, 0, 0);
             
             ctx.textAlign = 'center';
-            ctx.fillStyle = '#1a1a1a'; 
+            ctx.fillStyle = '#FFFFFF'; // ตัวอักษรสีขาว
             
             // 1. ชื่อนักวิ่ง
             const name = document.getElementById('myNameDisplay').innerText;
             ctx.font = 'bold 80px "Prompt", sans-serif'; 
-            ctx.fillText(name, canvas.width / 2, canvas.height * 0.485); 
+            ctx.fillText(name, canvas.width / 2, canvas.height * 0.505); 
             
             // 2. ระยะทาง
             const dist = document.getElementById('myDistDisplay').innerText;
             ctx.font = 'bold 75px "Prompt", sans-serif';
-            ctx.fillText(dist, canvas.width * 0.425, canvas.height * 0.612); 
+            ctx.fillText(dist, canvas.width * 0.355, canvas.height * 0.635); 
             
             // 3. วันที่ปัจจุบัน
             const d = new Date();
             const dateStr = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
             ctx.font = '45px "Prompt", sans-serif';
-            ctx.fillText(dateStr, canvas.width * 0.655, canvas.height * 0.732); 
+            ctx.fillText(dateStr, canvas.width * 0.640, canvas.height * 0.635); 
 
             const dataUrl = canvas.toDataURL('image/png');
             showLoading(false);
             
-            // เปิดหน้าต่างใหม่เพื่อแสดงรูปภาพให้บันทึก
             const win = window.open();
             win.document.write('<title>ใบเกียรติบัตรของคุณ ' + name + '</title>');
             win.document.write('<body style="margin:0; background:#333; display:flex; justify-content:center; align-items:center;"><img src="' + dataUrl + '" style="max-width:100%; box-shadow:0 0 20px rgba(0,0,0,0.5);"></body>');
