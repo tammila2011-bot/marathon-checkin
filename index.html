@@ -333,23 +333,23 @@
             ctx.drawImage(img, 0, 0);
             
             ctx.textAlign = 'center';
-            ctx.fillStyle = '#FFFFFF'; // ตัวอักษรสีขาว
+            ctx.fillStyle = '#FFFFFF'; // สีขาว
             
             // 1. ชื่อนักวิ่ง
             const name = document.getElementById('myNameDisplay').innerText;
             ctx.font = 'bold 80px "Prompt", sans-serif'; 
-            ctx.fillText(name, canvas.width / 2, canvas.height * 0.505); 
+            ctx.fillText(name, canvas.width / 2, canvas.height * 0.485); 
             
-            // 2. ระยะทาง
+            // 2. ระยะทาง (ปรับพิกัด X ให้เลื่อนมาทางซ้าย)
             const dist = document.getElementById('myDistDisplay').innerText;
             ctx.font = 'bold 75px "Prompt", sans-serif';
-            ctx.fillText(dist, canvas.width * 0.355, canvas.height * 0.635); 
+            ctx.fillText(dist, canvas.width * 0.355, canvas.height * 0.612); // แก้ตรงนี้ครับ
             
             // 3. วันที่ปัจจุบัน
             const d = new Date();
             const dateStr = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
             ctx.font = '45px "Prompt", sans-serif';
-            ctx.fillText(dateStr, canvas.width * 0.640, canvas.height * 0.635); 
+            ctx.fillText(dateStr, canvas.width * 0.655, canvas.height * 0.732); 
 
             const dataUrl = canvas.toDataURL('image/png');
             showLoading(false);
