@@ -335,21 +335,21 @@
             ctx.textAlign = 'center';
             ctx.fillStyle = '#FFFFFF'; // สีขาว
             
-            // 1. ชื่อนักวิ่ง
+            // 1. ชื่อนักวิ่ง (อยู่ที่เดิม 0.465)
             const name = document.getElementById('myNameDisplay').innerText;
-            ctx.font = 'bold 80px "Prompt", sans-serif'; 
-            ctx.fillText(name, canvas.width / 2, canvas.height * 0.485); 
+            ctx.font = 'bold 85px "Prompt", sans-serif'; 
+            ctx.fillText(name, canvas.width / 2, canvas.height * 0.465); 
             
-            // 2. ระยะทาง
+            // 2. ระยะทาง (ขยับซ้าย 0.35 และดิ่งลง 0.62)
             const dist = document.getElementById('myDistDisplay').innerText;
             ctx.font = 'bold 75px "Prompt", sans-serif';
-            ctx.fillText(dist, canvas.width * 0.355, canvas.height * 0.612); 
+            ctx.fillText(dist, canvas.width * 0.350, canvas.height * 0.620); 
             
-            // 3. วันที่ปัจจุบัน (ปรับพิกัด X ให้เลื่อนมาทางซ้ายนิดนึง)
+            // 3. วันที่ปัจจุบัน (ขยับขวา 0.68 และดิ่งลง 0.62 ให้ขนานกับระยะทาง)
             const d = new Date();
             const dateStr = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
             ctx.font = '45px "Prompt", sans-serif';
-            ctx.fillText(dateStr, canvas.width * 0.655, canvas.height * 0.612); // แก้ตรงนี้ครับ
+            ctx.fillText(dateStr, canvas.width * 0.680, canvas.height * 0.620); 
 
             const dataUrl = canvas.toDataURL('image/png');
             showLoading(false);
@@ -360,7 +360,7 @@
         };
         img.onerror = function() {
             showLoading(false);
-            alert("ไม่สามารถดึงรูปใบประกาศได้ กรุณาลองใหม่ภายหลัง");
+            alert("ไม่สามารถดึงรูปใบประกาศได้");
         };
     }
 
