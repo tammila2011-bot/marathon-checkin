@@ -266,9 +266,17 @@
                 myRows.forEach(r => {
                     if(r[1] === 'RUN') {
                         const dist = parseFloat(r[5] || 0); totalDist += dist;
-                        histArray.unshift(`<div class="history-card shadow-sm border-start border-primary border-4">+${dist.toFixed(2)} กม. ที่ ${pointNames[r[7]] || r[7]}</div>`);
-                    }
-                });
+                        histArray.unshift(`
+    <div class="history-card shadow-sm border-start border-primary border-4 p-2 mb-2">
+        <div class="d-flex justify-content-between mb-1">
+            <span class="text-primary fw-bold small">📅 ${dStr} | 🕒 ${tStr}น.</span>
+            <span class="badge bg-info text-dark" style="font-size: 0.7rem;">Pace ${ps}</span>
+            <span class="text-success fw-bold">+${dist.toFixed(2)} กม.</span>
+        </div>
+        <div class="small text-muted" style="font-size: 0.75rem;">
+            📍 ${pointNames[r[4]] || r[4]} ➡️ ${pointNames[r[7]] || r[7]}
+        </div>
+    </div>`);
                 document.getElementById('myRankDisplay').innerText = "🏆 อันดับที่ " + myRank;
                 document.getElementById('myNameDisplay').innerText = name;
                 document.getElementById('myDistDisplay').innerText = totalDist.toFixed(2);
