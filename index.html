@@ -229,38 +229,61 @@
     }
 
     async function checkPoint(code) {
-        const bib = document.getElementById('scanBib').value.trim();
-        if(!bib) return alert('ระบุ BIB');
-        showLoading(true);
-        const name = await getNameFromDatabase(bib);
-        const now = new Date();
-        
-        let msg = "";
-        if(!activeSession) {
-            activeSession = { start: code, bib: bib, startTime: now.toISOString() };
-            msg = "บันทึกจุดสแกนที่ " + pointNames[code] + " เรียบร้อยแล้ว วิ่งต่อไปได้ค่ะคุณ " + name + " สู้ๆ นะคะ";
-            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'record', bib: bib, name: name, start: code, end: code, distance: 0 }) });
-        } else {
-            const dist = Math.abs(distances[code] - distances[activeSession.start]);
-            if(dist === 0) { showLoading(false); return speak("อยู่ที่จุดเดิมค่ะคุณ " + name); }
-            msg = "บันทึกจุดสแกนที่ " + pointNames[code] + " เรียบร้อยแล้ว ระยะเพิ่ม " + dist + " กิโลเมตร วิ่งต่อไปได้ค่ะคุณ " + name + " สู้ๆ นะคะ";
-            try {
-                await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'record', bib: bib, name: name, start: activeSession.start, end: code, distance: dist, startTime: activeSession.startTime }) });
-                activeSession = { start: code, bib: bib, startTime: now.toISOString() };
-            } catch(e) {}
-        }
-        
-        // 1 & 2. เสียงจบแล้วพาไปหน้าสถิติฉัน
-        speak(msg);
-        showLoading(false);
-        
-        // กะเวลาจากความยาวประโยค (ประมาณ 5-6 วินาที) แล้วกระโดดไปหน้าสถิติ
-        setTimeout(() => {
-            document.getElementById('myBibSearch').value = bib;
-            bootstrap.Tab.getOrCreateInstance(document.getElementById('pills-me-tab')).show();
-            loadMyStats(); // โหลดและจะพูดเสียงเชียร์อันดับข้างในนี้
-        }, 6000);
+    const bib = document.getElementById('scanBib').value.trim();
+    if(!bib) return alert('ระบุ BIB');
+    
+    // 1. เปลี่ยนสีปุ่มทันทีที่กด เพื่อบอกว่า "รับทราบการกดแล้ว"
+    const currentBtn = document.getElementById('btn' + code);
+    if(currentBtn) {
+        currentBtn.style.backgroundColor = "#ccc"; 
+        currentBtn.style.borderColor = "#bbb";
+        currentBtn.innerText = "กำลังบันทึก... ⏳";
+        currentBtn.disabled = true; 
     }
+
+    showLoading(true);
+    const name = await getNameFromDatabase(bib);
+    const now = new Date();
+    
+    let msg = "";
+    if(!activeSession) {
+        activeSession = { start: code, bib: bib, startTime: now.toISOString() };
+        msg = "บันทึกจุดสแกนที่ " + pointNames[code] + " เรียบร้อยแล้ว วิ่งต่อไปได้ค่ะคุณ " + name + " สู้ๆ นะคะ";
+        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'record', bib: bib, name: name, start: code, end: code, distance: 0 }) });
+    } else {
+        const dist = Math.abs(distances[code] - distances[activeSession.start]);
+        if(dist === 0) { 
+            showLoading(false); 
+            if(currentBtn) { 
+                currentBtn.disabled = false;
+                currentBtn.style.backgroundColor = ""; 
+                currentBtn.innerText = "บันทึกจุด " + code;
+            }
+            return speak("อยู่ที่จุดเดิมค่ะคุณ " + name); 
+        }
+        msg = "บันทึกจุดสแกนที่ " + pointNames[code] + " เรียบร้อยแล้ว ระยะเพิ่ม " + dist + " กิโลเมตร วิ่งต่อไปได้ค่ะคุณ " + name + " สู้ๆ นะคะ";
+        try {
+            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'record', bib: bib, name: name, start: activeSession.start, end: code, distance: dist, startTime: activeSession.startTime }) });
+            activeSession = { start: code, bib: bib, startTime: now.toISOString() };
+        } catch(e) {}
+    }
+    
+    showLoading(false);
+
+    // --- ส่วนที่ปรับใหม่: หน่วงเวลา 3 วินาที ก่อนจะเริ่ม "พูด" และ "กระโดดหน้าจอ" ---
+    setTimeout(() => {
+        // เริ่มพูดหลังจากผ่านไป 3 วินาที
+        speak(msg); 
+        
+        // เปลี่ยนข้อความที่ปุ่มให้ดูสวยงาม
+        if(currentBtn) currentBtn.innerText = "บันทึกสำเร็จแล้ว ✅";
+
+        // กระโดดไปหน้าสถิติฉัน
+        document.getElementById('myBibSearch').value = bib;
+        bootstrap.Tab.getOrCreateInstance(document.getElementById('pills-me-tab')).show();
+        loadMyStats(); 
+    }, 3000); // หน่วงเวลา 3000ms = 3 วินาที
+}
 
     document.getElementById('regForm').onsubmit = async (e) => {
         e.preventDefault();
