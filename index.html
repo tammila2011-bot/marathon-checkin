@@ -405,7 +405,12 @@
     showLoading(true);
 
     try {
-        // --- 1. เตรียมข้อมูลสำหรับเสียง ---
+        // --- 0. เริ่มเปิดเพลงประกอบ (ใช้ลิงก์ MP3 ของอาจารย์) ---
+        const victoryMusic = new Audio('https://raw.githubusercontent.com/tammila2011-bot/marathon-checkin/main/Free%20Run%20Sunny.mp3');
+        victoryMusic.volume = 0.35; // ปรับความดังเพลง 35% เพื่อไม่ให้กลบเสียงพูด
+        victoryMusic.play();
+
+        // --- 1. เตรียมข้อมูลสำหรับเสียงพูด ---
         const nameForSpeak = document.getElementById('myNameDisplay').innerText;
         const distForSpeak = document.getElementById('myDistDisplay').innerText;
         const rankRaw = document.getElementById('myRankDisplay').innerText;
@@ -415,8 +420,13 @@
                             " ที่เข้าร่วมวิ่งโครงการ ฟรี รัน ซันนี่ " +
                             " สะสมระยะทางได้ " + distForSpeak + " กิโลเมตร " +
                             " ลำดับที่ " + rankForSpeak + " ยินดีด้วยค่ะ";
-        speak(congratsMsg);
+        
+        // หน่วงเวลาให้เพลงขึ้นก่อน 1 วินาที แล้วค่อยให้ AI พูดครับ
+        setTimeout(() => {
+            speak(congratsMsg);
+        }, 1000);
 
+        
         // --- 2. เตรียม Canvas วาดรูป ---
         const canvas = document.getElementById('certCanvas');
         const ctx = canvas.getContext('2d');
