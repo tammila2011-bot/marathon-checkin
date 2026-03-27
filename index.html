@@ -228,6 +228,25 @@
         } catch(e) { return "นักวิ่ง"; }
     }
 
+    function resetScannerUI() {
+    // 1. ซ่อนปุ่มบันทึกจุดทั้งหมด (A-F)
+    document.querySelectorAll('.btn-checkpoint').forEach(btn => {
+        btn.style.display = 'none';
+        btn.disabled = false;     // ปลดล็อคปุ่มให้กลับมาใช้งานได้ในครั้งหน้า
+        btn.style.backgroundColor = ""; // คืนสีเดิม (สีเขียว)
+        // คืนข้อความปุ่มตาม ID (เช่น btnA -> บันทึกจุด A)
+        const code = btn.id.replace('btn', '');
+        btn.innerText = "บันทึกจุด " + code;
+    });
+
+    // 2. รีเซ็ตข้อความสถานะ
+    const statusLabel = document.getElementById('scanStatus');
+    if(statusLabel) statusLabel.innerText = "พร้อมเช็คอิน...";
+
+    // 3. โชว์ปุ่มเปิดกล้อง (ถ้ามันถูกซ่อนอยู่)
+    const startBtn = document.getElementById('startScanBtn');
+    if(startBtn) startBtn.style.display = 'block';
+}
     async function checkPoint(code) {
     const bib = document.getElementById('scanBib').value.trim();
     if(!bib) return alert('ระบุ BIB');
@@ -281,7 +300,8 @@
         // กระโดดไปหน้าสถิติฉัน
         document.getElementById('myBibSearch').value = bib;
         bootstrap.Tab.getOrCreateInstance(document.getElementById('pills-me-tab')).show();
-        loadMyStats(); 
+        loadMyStats();
+        resetScannerUI(); 
     }, 3000); // หน่วงเวลา 3000ms = 3 วินาที
 }
 
