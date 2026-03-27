@@ -468,32 +468,30 @@
         console.error("Error in generateCertificate:", error);
         showLoading(false);
     }
-} // <--- ต้องมีปีกกาปิดตัวนี้ตัวเดียวจบฟังก์ชันครับ
+}
+
+// 3. ปรับปรุงหน้าอันดับรวมให้แบ่งหน้า (Pagination)
+async function fetchDataFromCloud() {
+    showLoading(true);
+    try {
+        const res = await fetch(SCRIPT_URL);
+        const rows = await res.json();
+        let summary = {}, grandTotal = 0;
+        namesDict = {};
+        rows.slice(1).forEach(r => {
+            const bib = String(r[2]).trim(), type = r[1], val = r[3], d = parseFloat(r[5] || 0);
+            if(type === 'REG') namesDict[bib] = val;
+            if(type === 'RUN') { summary[bib] = (summary[bib] || 0) + d; grandTotal += d; }
+        });
+        document.getElementById('grandTotalKm').innerText = grandTotal.toFixed(2);
+        fullSortedData = Object.entries(summary).sort((a,b) => b[1] - a[1]);
         
-        img.onload = function() {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-            ctx.textAlign = 'center';
-            ctx.fillStyle = '#FFFFFF';
-            const name = document.getElementById('myNameDisplay').innerText;
-            ctx.font = 'bold 85px "Prompt", sans-serif'; 
-            ctx.fillText(name, canvas.width / 2, canvas.height * 0.465); 
-            const dist = document.getElementById('myDistDisplay').innerText;
-            ctx.font = 'bold 75px "Prompt", sans-serif';
-            ctx.fillText(dist, canvas.width * 0.355, canvas.height * 0.700); 
-            const d = new Date();
-            const dateStr = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
-            ctx.font = '45px "Prompt", sans-serif';
-            ctx.fillText(dateStr, canvas.width * 0.655, canvas.height * 0.700); 
-            const dataUrl = canvas.toDataURL('image/png');
-            showLoading(false);
-            const win = window.open();
-            win.document.write('<title>ใบเกียรติบัตรของคุณ ' + name + '</title>');
-            win.document.write('<body style="margin:0; background:#333; display:flex; justify-content:center; align-items:center;"><img src="' + dataUrl + '" style="max-width:100%; box-shadow:0 0 20px rgba(0,0,0,0.5);"></body>');
-        };
-        img.onerror = function() { showLoading(false); alert("ไม่สามารถดึงรูปใบประกาศได้"); };
+        changePage(1); // แสดงหน้าแรก 30 คน
+    } catch(e) {
+        console.error("Error fetching data:", e);
     }
+    showLoading(false);
+}
 
     // 3. ปรับปรุงหน้าอันดับรวมให้แบ่งหน้า (Pagination)
     async function fetchDataFromCloud() {
