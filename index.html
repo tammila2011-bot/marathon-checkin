@@ -399,26 +399,51 @@
         showLoading(false);
     }
 
-    async function generateCertificate() {   
+    async function generateCertificate() {
     showLoading(true);
 
-    // --- เริ่มแทรกโค้ดเสียงตรงนี้ครับอาจารย์ ---
-    const nameForSpeak = document.getElementById('myNameDisplay').innerText;
-    const distForSpeak = document.getElementById('myDistDisplay').innerText;
-    const rankForSpeak = document.getElementById('myRankDisplay').innerText.replace('🏆 อันดับที่ ', '');
+    try {
+        // --- 1. ส่วนเสียงทักทาย ---
+        const nameForSpeak = document.getElementById('myNameDisplay').innerText;
+        const distForSpeak = document.getElementById('myDistDisplay').innerText;
+        // ตัดคำว่า "🏆 อันดับที่ " ออกเพื่อให้เหลือแต่ตัวเลข
+        const rankRaw = document.getElementById('myRankDisplay').innerText;
+        const rankForSpeak = rankRaw.replace('🏆 อันดับที่ ', '').replace('อันดับที่ ', '').trim();
 
-    const congratsMsg = "ขอแสดงความยินดีและมอบใบเกียรติบัตรแก่คุณ " + nameForSpeak + 
-                        " ที่เข้าร่วมวิ่งโครงการ ฟรี รัน ซันนี่ " +
-                        " สะสมระยะทางได้ " + distForSpeak + " กิโลเมตร " +
-                        " ลำดับที่ " + rankForSpeak + " ยินดีด้วยค่ะ";
-    speak(congratsMsg);
-    
-    // --- ส่วนเริ่มการวาดใบประกาศ ---
+        const congratsMsg = "ขอแสดงความยินดีและมอบใบเกียรติบัตรแก่คุณ " + nameForSpeak + 
+                            " ที่เข้าร่วมวิ่งโครงการ ฟรี รัน ซันนี่ " +
+                            " สะสมระยะทางได้ " + distForSpeak + " กิโลเมตร " +
+                            " ลำดับที่ " + rankForSpeak + " ยินดีด้วยค่ะ";
+        speak(congratsMsg);
+
+        // --- 2. ส่วนเตรียม Canvas ---
         const canvas = document.getElementById('certCanvas');
         const ctx = canvas.getContext('2d');
         const img = new Image();
-        img.crossOrigin = "anonymous"; 
-        img.src = 'https://raw.githubusercontent.com/tammila2011-bot/marathon-checkin/main/Certificate.png'; 
+        img.crossOrigin = "anonymous";
+        img.src = 'https://raw.githubusercontent.com/tammila2011-bot/marathon-checkin/main/Certificate.png';
+
+        img.onload = function() {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            
+            // ... (โค้ด ctx.fillText อื่นๆ ของอาจารย์ที่อยู่ด้านล่างคงไว้ตามเดิมครับ) ...
+            
+            // อย่าลืมปิดท้าย img.onload ด้วย showLoading(false) นะครับภาพถึงจะโชว์
+            showLoading(false); 
+        };
+        
+        img.onerror = function() {
+            showLoading(false);
+            alert("โหลดรูปพื้นหลังไม่สำเร็จ กรุณาลองใหม่อีกครั้งครับ");
+        };
+
+    } catch (error) {
+        console.error(error);
+        showLoading(false);
+    }
+}
         
         img.onload = function() {
             canvas.width = img.width;
