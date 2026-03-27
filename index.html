@@ -476,14 +476,36 @@
                         alert("ยินดีด้วยค่ะ! ระบบมอบใบเกียรติบัตรให้คุณ " + nameForSpeak + " แล้ว (ตรวจสอบในโฟลเดอร์ ดาวน์โหลด หรือ รูปภาพ นะคะ)");
                     }, 200);
                 }, 'image/png');
-            } catch (e) {
-                // กรณีถ้าวิธีแรกติดขัด ให้กลับไปใช้วิธี DataURL สำรอง
-                const dataUrl = canvas.toDataURL('image/png');
-                const link = document.createElement('a');
-                link.href = dataUrl;
-                link.download = 'เกียรติบัตร_FreeRunSunny_' + nameForSpeak + '.png';
-                link.click();
-                showLoading(false);
+                // --- 4. แสดงผลใบประกาศในหน้าใหม่ (Magic Moment) ---
+            const dataUrl = canvas.toDataURL('image/png');
+            showLoading(false);
+            
+            const win = window.open('', '_blank');
+            if (win) {
+                win.document.write(`
+                    <html>
+                    <head>
+                        <title>ใบเกียรติบัตรของคุณ ${nameForSpeak}</title>
+                        <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;600&display=swap" rel="stylesheet">
+                        <style>
+                            body { margin:0; background:#1a1a1a; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; font-family:'Prompt', sans-serif; color:white; }
+                            img { max-width:90%; border-radius:15px; box-shadow:0 10px 30px rgba(0,0,0,0.5); border: 2px solid #ffc107; animation: fadeIn 1s ease-in; }
+                            .btn-save { margin-top: 20px; padding: 12px 25px; background:#ffc107; color:#000; border-radius:25px; text-decoration:none; font-weight:bold; cursor:pointer; }
+                            .msg { margin-bottom: 15px; font-size: 1.2rem; text-align: center; }
+                            @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="msg">✨ ยินดีด้วยกับความสำเร็จของคุณ ${nameForSpeak} ✨</div>
+                        <img src="${dataUrl}">
+                        <a href="${dataUrl}" download="FreeRunSunny_Certificate.png" class="btn-save">💾 บันทึกรูปภาพ</a>
+                        <p style="font-size:0.8rem; margin-top:10px; color:#888;">(กดค้างที่รูปหรือกดปุ่มเพื่อบันทึก)</p>
+                    </body>
+                    </html>
+                `);
+                win.document.close();
+            } else {
+                alert("ยินดีด้วยค่ะ! อย่าลืมกด 'อนุญาต Pop-up' เพื่อชมใบเกียรติบัตรใบสวยของคุณนะคะ");
             }
         }; // ปิด img.onload 
 
