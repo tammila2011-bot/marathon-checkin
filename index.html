@@ -223,7 +223,7 @@
         const bib = document.getElementById('scanBib').value.trim();
         const name = await getNameFromDatabase(bib);
 
-        // --- 3. หน่วงเวลา 3 วินาที ก่อนจะเริ่ม "พูด" และ "เปิดให้กดบันทึก" ---
+        // --- 3. หน่วงเวลา 5 วินาที ก่อนจะเริ่ม "พูด" และ "เปิดให้กดบันทึก" ---
         setTimeout(() => {
             speak("พบจุดสแกนที่ " + pointNames[p] + " ของคุณ " + name + " ค่ะ");
             
@@ -306,9 +306,9 @@
     
     showLoading(false);
 
-    // --- ส่วนที่ปรับใหม่: หน่วงเวลา 3 วินาที ก่อนจะเริ่ม "พูด" และ "กระโดดหน้าจอ" ---
+    // --- ส่วนที่ปรับใหม่: หน่วงเวลา 5 วินาที ก่อนจะเริ่ม "พูด" และ "กระโดดหน้าจอ" ---
     setTimeout(() => {
-        // เริ่มพูดหลังจากผ่านไป 3 วินาที
+        // เริ่มพูดหลังจากผ่านไป 5 วินาที
         speak(msg); 
         
         // เปลี่ยนข้อความที่ปุ่มให้ดูสวยงาม
@@ -319,7 +319,7 @@
         bootstrap.Tab.getOrCreateInstance(document.getElementById('pills-me-tab')).show();
         loadMyStats();
         resetScannerUI(); 
-    }, 5000); // หน่วงเวลา 3000ms = 3 วินาที
+    }, 5000); // หน่วงเวลา 5000ms = 5 วินาที
 }
 
     document.getElementById('regForm').onsubmit = async (e) => {
