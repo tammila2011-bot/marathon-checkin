@@ -458,18 +458,7 @@
             document.body.removeChild(link);
 
             alert("ยินดีด้วยค่ะ! ระบบได้มอบใบเกียรติบัตรให้คุณ " + nameForSpeak + " เรียบร้อยแล้ว (ตรวจสอบได้ที่ไฟล์ดาวน์โหลดในเครื่องนะคะ)");
-        }; // ปิด img.onload
-
-        img.onerror = function() { 
-            showLoading(false); 
-            alert("ไม่สามารถดึงรูปใบประกาศได้"); 
-        };
-
-    } catch (error) {
-        console.error("Error in generateCertificate:", error);
-        showLoading(false);
-    }
-} // ปิดฟังก์ชัน generateCertificate
+        }; 
 
         img.onerror = function() { 
             showLoading(false); 
@@ -505,26 +494,23 @@ async function fetchDataFromCloud() {
     showLoading(false);
 }
 
-    // 3. ปรับปรุงหน้าอันดับรวมให้แบ่งหน้า (Pagination)
-    async function fetchDataFromCloud() {
-        showLoading(true);
-        try {
-            const res = await fetch(SCRIPT_URL);
-            const rows = await res.json();
-            let summary = {}, grandTotal = 0;
-            namesDict = {};
-            rows.slice(1).forEach(r => {
-                const bib = String(r[2]).trim(), type = r[1], val = r[3], d = parseFloat(r[5] || 0);
-                if(type === 'REG') namesDict[bib] = val;
-                if(type === 'RUN') { summary[bib] = (summary[bib] || 0) + d; grandTotal += d; }
-            });
-            document.getElementById('grandTotalKm').innerText = grandTotal.toFixed(2);
-            fullSortedData = Object.entries(summary).sort((a,b) => b[1] - a[1]);
-            
-            changePage(1); // แสดงหน้าแรก 30 คน
-        } catch(e) {}
-        showLoading(false);
-    }
+function changePage(pageNo) {
+    const pageSize = 30;
+    const start = (pageNo - 1) * pageSize;
+    const end = start + pageSize;
+    const pageData = fullSortedData.slice(start, end);
+    
+    // อัปเดตตาราง
+    document.getElementById('top10Body').innerHTML = pageData.map(([bib, d], i) => 
+        `<tr><td>${start + i + 1}</td><td><span class="badge bg-dark">${bib}</span></td><td><b>${namesDict[bib] || 'นักวิ่ง'}</b></td><td class="text-end fw-bold text-primary">${d.toFixed(2)}</td></tr>`
+    ).join('');
+    
+    // สลับสถานะปุ่ม
+    document.querySelectorAll('.pagination-btn').forEach((btn, idx) => {
+        if (idx + 1 === pageNo) btn.classList.add('active');
+        else btn.classList.remove('active');
+    });
+}
 
     function changePage(pageNo) {
         const pageSize = 30;
