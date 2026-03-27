@@ -405,9 +405,9 @@
     showLoading(true);
 
     try {
-        // --- 0. เริ่มเปิดเพลงประกอบ (ใช้ลิงก์ MP3 ของอาจารย์) ---
+        // --- 0. เริ่มเปิดเพลงประกอบ ---
         const victoryMusic = new Audio('https://raw.githubusercontent.com/tammila2011-bot/marathon-checkin/main/Free%20Run%20Sunny.mp3');
-        victoryMusic.volume = 0.35; // ปรับความดังเพลง 35% เพื่อไม่ให้กลบเสียงพูด
+        victoryMusic.volume = 0.35; 
         victoryMusic.play();
 
         // --- 1. เตรียมข้อมูลสำหรับเสียงพูด ---
@@ -421,12 +421,10 @@
                             " สะสมระยะทางได้ " + distForSpeak + " กิโลเมตร " +
                             " ลำดับที่ " + rankForSpeak + " ยินดีด้วยค่ะ";
         
-        // หน่วงเวลาให้เพลงขึ้นก่อน 1 วินาที แล้วค่อยให้ AI พูดครับ
         setTimeout(() => {
             speak(congratsMsg);
         }, 1000);
 
-        
         // --- 2. เตรียม Canvas วาดรูป ---
         const canvas = document.getElementById('certCanvas');
         const ctx = canvas.getContext('2d');
@@ -443,32 +441,19 @@
             ctx.fillStyle = '#FFFFFF';
             const name = document.getElementById('myNameDisplay').innerText;
             
-            // วาดชื่อนักวิ่ง
             ctx.font = 'bold 85px "Prompt", sans-serif'; 
             ctx.fillText(name, canvas.width / 2, canvas.height * 0.465); 
             
-            // วาดระยะทาง
             const dist = document.getElementById('myDistDisplay').innerText;
             ctx.font = 'bold 75px "Prompt", sans-serif';
             ctx.fillText(dist, canvas.width * 0.355, canvas.height * 0.700); 
 
-            // วาดวันที่
             const d = new Date();
             const dateStr = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
             ctx.font = '45px "Prompt", sans-serif';
             ctx.fillText(dateStr, canvas.width * 0.655, canvas.height * 0.700); 
 
-            // --- 4. ส่งออกรูปภาพและดาวน์โหลด (เวอร์ชันอัปเกรดเพื่อมือถือ) ---
-            try {
-                canvas.toBlob(function(blob) {
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = 'เกียรติบัตร_FreeRunSunny_' + nameForSpeak + '.png';
-                    
-                    document.body.appendChild(link);
-                    link.click();
-                    // --- 4. แสดงผลใบประกาศในหน้าใหม่ (Magic Moment) ---
+            // --- 4. แสดงผลใบประกาศในหน้าใหม่ ---
             const dataUrl = canvas.toDataURL('image/png');
             showLoading(false);
             
@@ -500,7 +485,7 @@
             } else {
                 alert("ยินดีด้วยค่ะ! อย่าลืมกดอนุญาต Pop-up เพื่อชมใบเกียรติบัตรของคุณนะคะ");
             }
-        }; // ปิด img.onload
+        };
 
         img.onerror = function() { 
             showLoading(false); 
@@ -511,19 +496,7 @@
         console.error("Error in generateCertificate:", error);
         showLoading(false);
     }
-}
-        }; // ปิด img.onload 
-
-        img.onerror = function() { 
-            showLoading(false); 
-            alert("ไม่สามารถดึงรูปใบประกาศได้"); 
-        };
-
-    } catch (error) {
-        console.error("Error in generateCertificate:", error);
-        showLoading(false);
-    }
-}
+} // ปิดฟังก์ชันที่ถูกต้อง
 
 // 3. ปรับปรุงหน้าอันดับรวมให้แบ่งหน้า (Pagination)
 async function fetchDataFromCloud() {
