@@ -468,7 +468,6 @@
                     
                     document.body.appendChild(link);
                     link.click();
-                    
                     // --- 4. แสดงผลใบประกาศในหน้าใหม่ (Magic Moment) ---
             const dataUrl = canvas.toDataURL('image/png');
             showLoading(false);
@@ -482,7 +481,7 @@
                         <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;600&display=swap" rel="stylesheet">
                         <style>
                             body { margin:0; background:#1a1a1a; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; font-family:'Prompt', sans-serif; color:white; }
-                            img { max-width:90%; border-radius:15px; box-shadow:0 10px 30px rgba(0,0,0,0.5); border: 3px solid #ffc107; animation: fadeIn 1s ease-in; transition: transform 0.3s; }
+                            img { max-width:90%; border-radius:15px; box-shadow:0 10px 30px rgba(0,0,0,0.5); border: 2px solid #ffc107; animation: fadeIn 1s ease-in; transition: transform 0.3s; }
                             img:hover { transform: scale(1.02); }
                             .btn-save { margin-top: 20px; padding: 12px 25px; background:#ffc107; color:#000; border-radius:25px; text-decoration:none; font-weight:bold; cursor:pointer; }
                             .msg { margin-bottom: 15px; font-size: 1.2rem; text-align: center; }
@@ -501,6 +500,18 @@
             } else {
                 alert("ยินดีด้วยค่ะ! อย่าลืมกดอนุญาต Pop-up เพื่อชมใบเกียรติบัตรของคุณนะคะ");
             }
+        }; // ปิด img.onload
+
+        img.onerror = function() { 
+            showLoading(false); 
+            alert("ไม่สามารถดึงรูปใบประกาศได้"); 
+        };
+
+    } catch (error) {
+        console.error("Error in generateCertificate:", error);
+        showLoading(false);
+    }
+}
         }; // ปิด img.onload 
 
         img.onerror = function() { 
