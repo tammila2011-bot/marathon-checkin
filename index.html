@@ -446,16 +446,10 @@
             ctx.font = '45px "Prompt", sans-serif';
             ctx.fillText(dateStr, canvas.width * 0.655, canvas.height * 0.700); 
 
-            // ส่งออกรูปและโชว์ผล
-            const dataUrl = canvas.toDataURL('image/png');
-            showLoading(false);
-            
-            const win = window.open();
             // --- 4. ส่งออกรูปภาพและดาวน์โหลดอัตโนมัติ ---
             const dataUrl = canvas.toDataURL('image/png');
             showLoading(false);
             
-            // สร้างลิงก์ดาวน์โหลด (วิธีนี้จะไม่โดนบล็อกป๊อปอัป)
             const link = document.createElement('a');
             link.href = dataUrl;
             link.download = 'เกียรติบัตร_FreeRunSunny_' + nameForSpeak + '.png';
@@ -463,15 +457,19 @@
             link.click();
             document.body.removeChild(link);
 
-            // แจ้งเตือนนักวิ่งเล็กน้อย
             alert("ยินดีด้วยค่ะ! ระบบได้มอบใบเกียรติบัตรให้คุณ " + nameForSpeak + " เรียบร้อยแล้ว (ตรวจสอบได้ที่ไฟล์ดาวน์โหลดในเครื่องนะคะ)");
-            if (win) {
-                win.document.write('<title>ใบเกียรติบัตรของคุณ ' + name + '</title>');
-                win.document.write('<body style="margin:0; background:#333; display:flex; justify-content:center; align-items:center;"><img src="' + dataUrl + '" style="max-width:100%; box-shadow:0 0 20px rgba(0,0,0,0.5);"></body>');
-            } else {
-                alert("กรุณาอนุญาตให้เปิด Pop-up เพื่อรับใบเกียรติบัตรครับ");
-            }
+        }; // ปิด img.onload
+
+        img.onerror = function() { 
+            showLoading(false); 
+            alert("ไม่สามารถดึงรูปใบประกาศได้"); 
         };
+
+    } catch (error) {
+        console.error("Error in generateCertificate:", error);
+        showLoading(false);
+    }
+} // ปิดฟังก์ชัน generateCertificate
 
         img.onerror = function() { 
             showLoading(false); 
