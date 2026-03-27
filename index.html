@@ -208,16 +208,34 @@
     }
 
     async function handleScannedPoint(p) {
-        document.querySelectorAll('.btn-checkpoint').forEach(b => b.style.display = 'none');
-        const btn = document.getElementById('btn' + p);
-        if (btn) { 
-            btn.style.display = 'block'; 
-            document.getElementById('scanStatus').innerText = "📍 พบจุด: " + pointNames[p]; 
-            const bib = document.getElementById('scanBib').value.trim();
-            const name = await getNameFromDatabase(bib);
+    // 1. ล้างปุ่มจุดอื่นๆ ออกก่อน และหาปุ่มของจุดที่เพิ่งสแกนเจอ
+    document.querySelectorAll('.btn-checkpoint').forEach(b => b.style.display = 'none');
+    const btn = document.getElementById('btn' + p);
+    
+    if (btn) { 
+        // 2. โชว์ปุ่มทันที แต่ล็อคไว้ก่อน (Disabled) เพื่อรอจังหวะเสียง
+        btn.style.display = 'block'; 
+        btn.disabled = true; 
+        btn.innerText = "กำลังตรวจสอบจุด... ⏳";
+        btn.style.backgroundColor = "#6c757d"; // เปลี่ยนเป็นสีเทาเข้มชั่วคราว
+        
+        document.getElementById('scanStatus').innerText = "📍 พบจุด: " + pointNames[p]; 
+        
+        const bib = document.getElementById('scanBib').value.trim();
+        const name = await getNameFromDatabase(bib);
+
+        // --- 3. หน่วงเวลา 3 วินาที ก่อนจะเริ่ม "พูด" และ "เปิดให้กดบันทึก" ---
+        setTimeout(() => {
             speak("พบจุดสแกนที่ " + pointNames[p] + " ของคุณ " + name + " ค่ะ");
-        }
+            
+            // ปรับปุ่มให้เป็นสีเขียวและกดบันทึกได้
+            btn.disabled = false;
+            btn.innerText = "บันทึกจุด " + p;
+            btn.style.backgroundColor = ""; // คืนค่าสีเขียวตาม CSS เดิม
+            btn.style.borderColor = "";
+        }, 3000); 
     }
+}
 
     async function getNameFromDatabase(bib) {
         try {
