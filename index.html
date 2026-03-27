@@ -399,13 +399,27 @@
         showLoading(false);
     }
 
-    async function generateCertificate() {
-        showLoading(true);
+    async function generateCertificate() {   
+    showLoading(true);
+
+    // --- เริ่มแทรกโค้ดเสียงตรงนี้ครับอาจารย์ ---
+    const nameForSpeak = document.getElementById('myNameDisplay').innerText;
+    const distForSpeak = document.getElementById('myDistDisplay').innerText;
+    const rankForSpeak = document.getElementById('myRankDisplay').innerText.replace('🏆 อันดับที่ ', '');
+
+    const congratsMsg = "ขอแสดงความยินดีและมอบใบเกียรติบัตรแก่คุณ " + nameForSpeak + 
+                        " ที่เข้าร่วมวิ่งโครงการ ฟรี รัน ซันนี่ " +
+                        " สะสมระยะทางได้ " + distForSpeak + " กิโลเมตร " +
+                        " ลำดับที่ " + rankForSpeak + " ยินดีด้วยค่ะ";
+    speak(congratsMsg);
+    
+    // --- ส่วนเริ่มการวาดใบประกาศ ---
         const canvas = document.getElementById('certCanvas');
         const ctx = canvas.getContext('2d');
         const img = new Image();
         img.crossOrigin = "anonymous"; 
         img.src = 'https://raw.githubusercontent.com/tammila2011-bot/marathon-checkin/main/Certificate.png'; 
+        
         img.onload = function() {
             canvas.width = img.width;
             canvas.height = img.height;
