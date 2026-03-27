@@ -432,28 +432,29 @@
             ctx.fillStyle = '#FFFFFF';
             const name = document.getElementById('myNameDisplay').innerText;
             
-            // วาดชื่อ
             ctx.font = 'bold 85px "Prompt", sans-serif'; 
             ctx.fillText(name, canvas.width / 2, canvas.height * 0.465); 
             
-            // วาดระยะทาง
             const dist = document.getElementById('myDistDisplay').innerText;
             ctx.font = 'bold 75px "Prompt", sans-serif';
             ctx.fillText(dist, canvas.width * 0.355, canvas.height * 0.700); 
 
-            // วาดวันที่
             const d = new Date();
             const dateStr = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
             ctx.font = '45px "Prompt", sans-serif';
             ctx.fillText(dateStr, canvas.width * 0.655, canvas.height * 0.700); 
 
-            // --- 4. ส่งออกเป็นรูปภาพและแสดงผล ---
+            // --- 4. ส่งออกรูปภาพ ---
             const dataUrl = canvas.toDataURL('image/png');
             showLoading(false);
             
             const win = window.open();
-            win.document.write('<title>ใบเกียรติบัตรของคุณ ' + name + '</title>');
-            win.document.write('<body style="margin:0; background:#333; display:flex; justify-content:center; align-items:center;"><img src="' + dataUrl + '" style="max-width:100%; box-shadow:0 0 20px rgba(0,0,0,0.5);"></body>');
+            if (win) {
+                win.document.write('<title>ใบเกียรติบัตรของคุณ ' + name + '</title>');
+                win.document.write('<body style="margin:0; background:#333; display:flex; justify-content:center; align-items:center;"><img src="' + dataUrl + '" style="max-width:100%; box-shadow:0 0 20px rgba(0,0,0,0.5);"></body>');
+            } else {
+                alert("กรุณาอนุญาตให้เปิด Pop-up เพื่อรับใบเกียรติบัตรครับ");
+            }
         };
 
         img.onerror = function() { 
@@ -465,7 +466,7 @@
         console.error(error);
         showLoading(false);
     }
-}
+} // ปิดฟังก์ชันที่ถูกต้อง
         
         img.onload = function() {
             canvas.width = img.width;
