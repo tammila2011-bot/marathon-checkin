@@ -148,24 +148,11 @@
                     <h5 id="myNameDisplay" class="fw-bold text-primary mb-1">-</h5>
                     <div id="myMedalDisplay" style="font-size:3rem; margin:10px 0;">🏃‍♂️</div>
                      
-                    <div id="certArea" class="mt-3" style="display:none;">
-                        <button onclick="generateCertificate()
-                            function generateCertificate() {
-    const name = document.getElementById('myNameDisplay').innerText;
-    const dist = document.getElementById('myDistDisplay').innerText;
-    const rank = document.getElementById('myRankDisplay').innerText.replace('🏆 อันดับที่ ', '');
-
-    const congratsMsg = "ขอแสดงความยินดีและมอบใบเกียรติบัตรแก่คุณ " + name + 
-                        " ที่เข้าร่วมวิ่งโครงการ ฟรี รัน ซันนี่ " +
-                        " สะสมระยะทางได้ " + dist + " กิโลเมตร " +
-                        " ลำดับที่ " + rank + " ยินดีด้วยค่ะ";
-    speak(congratsMsg);
-}
-                         " class="btn btn-warning w-100 shadow-sm fw-bold p-3" style="border-radius:15px; background: linear-gradient(45deg, #ffd700, #ff8c00); border:none; color:white; animation: pulse 2s infinite;">
-                            📜 รับเกียรติบัตรออนไลน์ (แชร์ลงโซเชียล)
-                        </button>
-                        <canvas id="certCanvas" style="display:none;"></canvas>
-                    </div>
+ <div id="certArea" class="mt-3" style="display:none;">
+    <button onclick="generateCertificate()" class="btn btn-warning w-100 shadow-sm fw-bold p-3" style="border-radius:15px;">
+        📜 รับเกียรติบัตรออนไลน์ (แชร์ลงโซเชียล)
+    </button>
+</div>
 
                     <div class="px-3 mt-3">
                         <div class="progress" style="height:12px; background:#eee; border-radius:10px; margin:10px 0;">
