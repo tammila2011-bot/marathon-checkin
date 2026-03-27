@@ -403,7 +403,7 @@
     showLoading(true);
 
     try {
-        // --- 1. ส่วนเสียงทักทาย ---
+        // --- 1. เตรียมข้อมูลสำหรับเสียง ---
         const nameForSpeak = document.getElementById('myNameDisplay').innerText;
         const distForSpeak = document.getElementById('myDistDisplay').innerText;
         const rankRaw = document.getElementById('myRankDisplay').innerText;
@@ -415,7 +415,7 @@
                             " ลำดับที่ " + rankForSpeak + " ยินดีด้วยค่ะ";
         speak(congratsMsg);
 
-        // --- 2. ส่วนเตรียม Canvas ---
+        // --- 2. เตรียม Canvas วาดรูป ---
         const canvas = document.getElementById('certCanvas');
         const ctx = canvas.getContext('2d');
         const img = new Image();
@@ -427,24 +427,26 @@
             canvas.height = img.height;
             ctx.drawImage(img, 0, 0);
             
-            // --- 3. ส่วนวาดข้อความลงใบประกาศ ---
             ctx.textAlign = 'center';
             ctx.fillStyle = '#FFFFFF';
             const name = document.getElementById('myNameDisplay').innerText;
             
+            // วาดชื่อนักวิ่ง
             ctx.font = 'bold 85px "Prompt", sans-serif'; 
             ctx.fillText(name, canvas.width / 2, canvas.height * 0.465); 
             
+            // วาดระยะทาง
             const dist = document.getElementById('myDistDisplay').innerText;
             ctx.font = 'bold 75px "Prompt", sans-serif';
             ctx.fillText(dist, canvas.width * 0.355, canvas.height * 0.700); 
 
+            // วาดวันที่
             const d = new Date();
             const dateStr = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
             ctx.font = '45px "Prompt", sans-serif';
             ctx.fillText(dateStr, canvas.width * 0.655, canvas.height * 0.700); 
 
-            // --- 4. ส่งออกรูปภาพ ---
+            // ส่งออกรูปและโชว์ผล
             const dataUrl = canvas.toDataURL('image/png');
             showLoading(false);
             
@@ -463,10 +465,10 @@
         };
 
     } catch (error) {
-        console.error(error);
+        console.error("Error in generateCertificate:", error);
         showLoading(false);
     }
-} // ปิดฟังก์ชันที่ถูกต้อง
+} // <--- ต้องมีปีกกาปิดตัวนี้ตัวเดียวจบฟังก์ชันครับ
         
         img.onload = function() {
             canvas.width = img.width;
