@@ -26,6 +26,8 @@
         .btn-hub { font-weight: 600; border-radius: 12px; margin-bottom: 8px; border: none; }
         .pagination-btn { border-radius: 10px; margin: 2px; min-width: 40px; }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt..." rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
 
@@ -512,8 +514,22 @@ async function fetchDataFromCloud() {
             if(type === 'REG') namesDict[bib] = val;
             if(type === 'RUN') { summary[bib] = (summary[bib] || 0) + d; grandTotal += d; }
         });
+        // 1. อัปเดตตัวเลขรวมบนหน้าจอ
         document.getElementById('grandTotalKm').innerText = grandTotal.toFixed(2);
-        fullSortedData = Object.entries(summary).sort((a,b) => b[1] - a[1]);
+        
+        // 2. จัดเรียงข้อมูลอันดับ (Sorted Data)
+        fullSortedData = Object.entries(summary).sort((a, b) => b[1] - a[1]);
+
+        // 3. ระบบจุดพลุฉลองทุกๆ 1,000 กม. (เริ่มที่ 5,000)
+        if (grandTotal >= 5000) {
+            const currentMilestone = Math.floor(grandTotal / 1000) * 1000;
+            
+            // เช็กเพื่อให้พลุแตกแค่ครั้งเดียวเมื่อถึงหลักพันนั้นๆ
+            if (window.lastMilestone !== currentMilestone) {
+                triggerConfetti(); // เรียกฟังก์ชันพลุ
+                window.lastMilestone = currentMilestone; 
+            }
+        }
         
         changePage(1); // แสดงหน้าแรก 30 คน
     } catch(e) {
@@ -583,6 +599,20 @@ function changePage(pageNo) {
     }
 
     function showLoading(s) { document.getElementById('loading').style.display = s ? 'flex' : 'none'; }
+    function triggerConfetti() {
+    var duration = 5 * 1000;
+    var animationEnd = Date.now() + duration;
+    var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+
+    var interval = setInterval(function() {
+        var timeLeft = animationEnd - Date.now();
+        if (timeLeft <= 0) return clearInterval(interval);
+
+        var particleCount = 50 * (timeLeft / duration);
+        confetti(Object.assign({}, defaults, { particleCount, origin: { x: 0.2, y: 0.6 } }));
+        confetti(Object.assign({}, defaults, { particleCount, origin: { x: 0.8, y: 0.6 } }));
+    }, 250);
+}
 </script>
 </body>
 </html>
