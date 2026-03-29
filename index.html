@@ -349,81 +349,86 @@
     };
 
     async function loadMyStats() {
-        const inputBib = document.getElementById('myBibSearch').value.trim();
-        localStorage.setItem('lastUsedBib', inputBib);
-        if(!inputBib) return;
-        showLoading(true);
-        try {
-            const res = await fetch(SCRIPT_URL);
-            const rows = await res.json();
-            let summary = {};
-            rows.slice(1).forEach(r => {
+    const inputBib = document.getElementById('myBibSearch').value.trim();
+    localStorage.setItem('lastUsedBib', inputBib);
+    if(!inputBib) return;
+    showLoading(true);
+    try {
+        const res = await fetch(SCRIPT_URL);
+        const rows = await res.json();
+        let summary = {};
+        rows.slice(1).forEach(r => {
+            if(r[1] === 'RUN') {
+                const b = String(r[2]).trim();
+                summary[b] = (summary[b] || 0) + parseFloat(r[5] || 0);
+            }
+        });
+        const sortedEntries = Object.entries(summary).sort((a,b) => b[1] - a[1]);
+        const rankIndex = sortedEntries.findIndex(([bib]) => bib === String(inputBib));
+        const myRank = rankIndex !== -1 ? rankIndex + 1 : "--";
+
+        let totalDist = 0, name = "นักวิ่ง", histArray = [];
+        const regRow = rows.slice(1).reverse().find(r => r[1] === 'REG' && String(r[2]).trim() === String(inputBib));
+        
+        // --- 1. เก็บชื่อไว้แสดงผล ---
+        if (regRow) {
+            name = regRow[3];
+            document.getElementById('displayRunnerName').innerText = name; 
+            document.getElementById('runnerProfile').style.display = 'block';
+        }
+
+        const myRows = rows.slice(1).filter(r => String(r[2]).trim() === String(inputBib));
+        if(myRows.length > 0) {
+            myRows.forEach(r => {
                 if(r[1] === 'RUN') {
-                    const b = String(r[2]).trim();
-                    summary[b] = (summary[b] || 0) + parseFloat(r[5] || 0);
+                    const dist = parseFloat(r[5] || 0); 
+                    totalDist += dist; // <--- คำนวณระยะทางสะสมตรงนี้
+                    
+                    const d = new Date(r[0]), 
+                          dStr = d.toLocaleDateString('th-TH',{day:'numeric',month:'short'}), 
+                          tStr = d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+                    
+                    let ps = "--:--";
+                    if (dist > 0 && r[6]) {
+                        const diff = new Date(r[0]) - new Date(r[6]);
+                        if (diff > 0 && diff < 18000000) {
+                            const paceDecimal = (diff / 60000) / dist;
+                            const pMin = Math.floor(paceDecimal);
+                            const pSec = Math.round((paceDecimal - pMin) * 60);
+                            ps = pMin + ":" + pSec.toString().padStart(2, '0');
+                        }
+                    }
+                    histArray.unshift(`<div class="history-card shadow-sm border-start border-primary border-4"><div class="d-flex justify-content-between mb-1"><span class="text-primary fw-bold small">📅 ${dStr} | 🕒 ${tStr}น.</span><span class="badge bg-info text-dark">Pace ${ps}</span><span class="text-success fw-bold">+${dist.toFixed(2)} กม.</span></div><div class="small text-muted text-start">📍 ${pointNames[r[4]] || r[4]} ➡️ ${pointNames[r[7]] || r[7]}</div></div>`);
                 }
             });
-            const sortedEntries = Object.entries(summary).sort((a,b) => b[1] - a[1]);
-            const rankIndex = sortedEntries.findIndex(([bib]) => bib === String(inputBib));
-            const myRank = rankIndex !== -1 ? rankIndex + 1 : "--";
 
-            let totalDist = 0, name = "นักวิ่ง", histArray = [];
-            const regRow = rows.slice(1).reverse().find(r => r[1] === 'REG' && String(r[2]).trim() === String(inputBib));
-            if (regRow) {
-            name = regRow[3];
-            // 1. ใส่ชื่อในช่องทักทาย
-            document.getElementById('displayRunnerName').innerText = name; 
-            // 2. สั่งให้กล่องทักทายแสดงผล
-            document.getElementById('runnerProfile').style.display = 'block';
-        } // <--- ปิดปีกกาของ if(regRow) ที่บรรทัดนี้
+            // --- 2. นำข้อมูลที่คำนวณเสร็จแล้ว มาใส่ในหน้าจอ ---
+            document.getElementById('myRankDisplay').innerText = "🏆 อันดับที่ " + myRank;
+            document.getElementById('myNameDisplay').innerText = name;
+            document.getElementById('myDistDisplay').innerText = totalDist.toFixed(2);
+            document.getElementById('myProgressBar').style.width = Math.min((totalDist / 100) * 100, 100) + '%';
+            document.getElementById('myHistoryList').innerHTML = `<h6 class="fw-bold mb-2 small mt-3 text-secondary text-start">ประวัติล่าสุด:</h6>` + (histArray.slice(0, 10).join(''));
+            
+            // --- 3. เปิดสวิตช์แสดงผลหน้าจอ ---
+            document.getElementById('myResultArea').style.display = 'block';
+            document.getElementById('certArea').style.display = 'block';
 
-        // 3. (ของเดิม) แสดงข้อมูลในส่วนสถิติด้านล่าง
-        document.getElementById('myNameDisplay').innerText = name; 
-        document.getElementById('myDistDisplay').innerText = totalDist.toFixed(2);
-        
-        // 4. (บรรทัดสำคัญ) สั่งให้ "กล่องสถิติทั้งหมด" แสดงผลออกมา
-        document.getElementById('myResultArea').style.display = 'block';
-
-            const myRows = rows.slice(1).filter(r => String(r[2]).trim() === String(inputBib));
-            if(myRows.length > 0) {
-                myRows.forEach(r => {
-                    if(r[1] === 'RUN') {
-                        const dist = parseFloat(r[5] || 0); totalDist += dist;
-                        const d = new Date(r[0]), dStr = d.toLocaleDateString('th-TH',{day:'numeric',month:'short'}), tStr = d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
-                        let ps = "--:--";
-                        if (dist > 0 && r[6]) {
-                            const diff = new Date(r[0]) - new Date(r[6]);
-                            if (diff > 0 && diff < 18000000) {
-                                const paceDecimal = (diff / 60000) / dist;
-                                const pMin = Math.floor(paceDecimal);
-                                const pSec = Math.round((paceDecimal - pMin) * 60);
-                                ps = pMin + ":" + pSec.toString().padStart(2, '0');
-                            }
-                        }
-                        histArray.unshift(`<div class="history-card shadow-sm border-start border-primary border-4"><div class="d-flex justify-content-between mb-1"><span class="text-primary fw-bold small">📅 ${dStr} | 🕒 ${tStr}น.</span><span class="badge bg-info text-dark">Pace ${ps}</span><span class="text-success fw-bold">+${dist.toFixed(2)} กม.</span></div><div class="small text-muted text-start">📍 ${pointNames[r[4]] || r[4]} ➡️ ${pointNames[r[7]] || r[7]}</div></div>`);
-                    }
-                });
-                document.getElementById('myRankDisplay').innerText = "🏆 อันดับที่ " + myRank;
-                document.getElementById('myNameDisplay').innerText = name;
-                document.getElementById('myDistDisplay').innerText = totalDist.toFixed(2);
-                document.getElementById('myProgressBar').style.width = Math.min(totalDist, 100) + '%';
-                document.getElementById('myHistoryList').innerHTML = `<h6 class="fw-bold mb-2 small mt-3 text-secondary text-start">ประวัติล่าสุด:</h6>` + (histArray.slice(0, 10).join(''));
-                document.getElementById('myResultArea').style.display = 'block';
-                document.getElementById('certArea').style.display = 'block';
-
-                if (totalDist >= 100) {
-                    document.getElementById('myMedalDisplay').innerHTML = "🥇🏆🎆";
-                    speak("วินาทีประวัติศาสตร์! ยินดีด้วยค่ะคุณวิ่งครบระยะ 100 กิโลเมตรแล้ว คุณอยู่อันดับที่ " + myRank + " เก่งมากค่ะคุณ " + name);
-                    playFireworkSound();
-                } else {
-                    document.getElementById('myMedalDisplay').innerHTML = "🏃‍♂️";
-                    // 1 & 2. เสียงเชียร์อันดับหน้าสถิติฉัน
-                    speak("โอ้โห! ดูอันดับสิคะคุณ " + name + " พุ่งขึ้นมาแล้วนะ! อีกนิดเดียวจะแซงข้างหน้าแล้ว ลุยต่อเลยค่ะ!");
-                }
-            } else { alert("ไม่พบข้อมูล BIB"); }
-        } catch(e) { console.error(e); }
-        showLoading(false);
+            if (totalDist >= 100) {
+                document.getElementById('myMedalDisplay').innerHTML = "🥇🏆🎆";
+                speak("วินาทีประวัติศาสตร์! ยินดีด้วยค่ะคุณวิ่งครบระยะ 100 กิโลเมตรแล้ว คุณอยู่อันดับที่ " + myRank + " เก่งมากค่ะคุณ " + name);
+                if (typeof playFireworkSound === "function") playFireworkSound();
+            } else {
+                document.getElementById('myMedalDisplay').innerHTML = "🏃‍♂️";
+                speak("โอ้โห! ดูอันดับสิคะคุณ " + name + " พุ่งขึ้นมาแล้วนะ! อีกนิดเดียวจะแซงข้างหน้าแล้ว ลุยต่อเลยค่ะ!");
+            }
+        } else { 
+            alert("ไม่พบข้อมูล BIB"); 
+        }
+    } catch(e) { 
+        console.error("Error loading stats:", e); 
     }
+    showLoading(false);
+}
 
     async function generateCertificate() {
     showLoading(true);
