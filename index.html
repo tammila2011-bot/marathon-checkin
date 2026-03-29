@@ -349,10 +349,11 @@
     };
 
     async function loadMyStats() {
+    console.log("เริ่มทำงาน...");
     const inputField = document.getElementById('myBibSearch');
-    const inputBib = inputField.value.trim();
+    if(!inputField) { alert("หาช่องกรอก BIB ไม่เจอ!"); return; }
     
-    // 1. บันทึกความจำลงเครื่อง
+    const inputBib = inputField.value.trim();
     localStorage.setItem('lastUsedBib', inputBib);
     if(!inputBib) return;
     
@@ -361,88 +362,43 @@
     try {
         const res = await fetch(SCRIPT_URL);
         const rows = await res.json();
-        let summary = {};
+        let summary = {}, totalDist = 0, name = "นักวิ่ง", histArray = [];
         
-        // 2. คำนวณอันดับ (Rank) จากนักวิ่งทุกคน
+        // 1. คำนวณข้อมูล
         rows.slice(1).forEach(r => {
+            const b = String(r[2]).trim();
             if(r[1] === 'RUN') {
-                const b = String(r[2]).trim();
                 summary[b] = (summary[b] || 0) + parseFloat(r[5] || 0);
+                if(b === String(inputBib)) totalDist += parseFloat(r[5] || 0);
             }
         });
         
         const sortedEntries = Object.entries(summary).sort((a,b) => b[1] - a[1]);
         const rankIndex = sortedEntries.findIndex(([bib]) => bib === String(inputBib));
         const myRank = rankIndex !== -1 ? rankIndex + 1 : "--";
-
-        let totalDist = 0, name = "นักวิ่ง", histArray = [];
         
-        // 3. ค้นหาชื่อเล่น/ชื่อจริง จากข้อมูลการลงทะเบียน (REG)
         const regRow = rows.slice(1).reverse().find(r => r[1] === 'REG' && String(r[2]).trim() === String(inputBib));
-        if (regRow) {
-            name = regRow[3];
-        }
+        if (regRow) name = regRow[3];
 
-        // 4. กรองประวัติการวิ่งเฉพาะของ BIB นี้
-        const myRows = rows.slice(1).filter(r => String(r[2]).trim() === String(inputBib));
-        
-        if(myRows.length > 0) {
-            myRows.forEach(r => {
-                if(r[1] === 'RUN') {
-                    const dist = parseFloat(r[5] || 0); 
-                    totalDist += dist;
-                    const d = new Date(r[0]), 
-                          dStr = d.toLocaleDateString('th-TH',{day:'numeric',month:'short'}), 
-                          tStr = d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
-                    
-                    let ps = "--:--";
-                    if (dist > 0 && r[6]) {
-                        const diff = new Date(r[0]) - new Date(r[6]);
-                        if (diff > 0 && diff < 18000000) {
-                            const paceDecimal = (diff / 60000) / dist;
-                            const pMin = Math.floor(paceDecimal);
-                            const pSec = Math.round((paceDecimal - pMin) * 60);
-                            ps = pMin + ":" + pSec.toString().padStart(2, '0');
-                        }
-                    }
-                    histArray.unshift(`<div class="history-card shadow-sm border-start border-primary border-4"><div class="d-flex justify-content-between mb-1"><span class="text-primary fw-bold small">📅 ${dStr} | 🕒 ${tStr}น.</span><span class="badge bg-info text-dark">Pace ${ps}</span><span class="text-success fw-bold">+${dist.toFixed(2)} กม.</span></div><div class="small text-muted text-start">📍 ${pointNames[r[4]] || r[4]} ➡️ ${pointNames[r[7]] || r[7]}</div></div>`);
-                }
-            });
+        // 2. อัปเดตหน้าจอ (ใส่ Try-Catch ย่อยเพื่อไม่ให้ตัวหนึ่งพังแล้วพังหมด)
+        try {
+            if(document.getElementById('displayRunnerName')) document.getElementById('displayRunnerName').innerText = name;
+            if(document.getElementById('myRankDisplay')) document.getElementById('myRankDisplay').innerText = "🏆 อันดับที่ " + myRank;
+            if(document.getElementById('myNameDisplay')) document.getElementById('myNameDisplay').innerText = name;
+            if(document.getElementById('myDistDisplay')) document.getElementById('myDistDisplay').innerText = totalDist.toFixed(2);
+            if(document.getElementById('myProgressBar')) document.getElementById('myProgressBar').style.width = Math.min(totalDist, 100) + '%';
+        } catch(err) { console.log("UI Update บางส่วนติดขัด"); }
 
-            // --- 5. อัปเดตข้อมูลลงหน้าจอ (UI Update) ---
-            
-            // ใส่ชื่อในกล่องทักทาย
-            if(document.getElementById('displayRunnerName')) {
-                document.getElementById('displayRunnerName').innerText = name;
-            }
-            
-            // ใส่ข้อมูลในหน้าสถิติ
-            document.getElementById('myRankDisplay').innerText = "🏆 อันดับที่ " + myRank;
-            document.getElementById('myNameDisplay').innerText = name;
-            document.getElementById('myDistDisplay').innerText = totalDist.toFixed(2);
-            document.getElementById('myProgressBar').style.width = Math.min(totalDist, 100) + '%';
-            document.getElementById('myHistoryList').innerHTML = `<h6 class="fw-bold mb-2 small mt-3 text-secondary text-start">ประวัติล่าสุด:</h6>` + (histArray.slice(0, 10).join(''));
-            
-            // --- 6. เปิดม่านการแสดงผล (หัวใจสำคัญ!) ---
-            if(document.getElementById('runnerProfile')) document.getElementById('runnerProfile').style.display = 'block';
-            if(document.getElementById('myResultArea')) document.getElementById('myResultArea').style.display = 'block';
-            if(document.getElementById('certArea')) document.getElementById('certArea').style.display = 'block';
+        // 3. เปิดม่านแสดงผล
+        if(document.getElementById('runnerProfile')) document.getElementById('runnerProfile').style.display = 'block';
+        if(document.getElementById('myResultArea')) document.getElementById('myResultArea').style.display = 'block';
 
-            // --- 7. ระบบเสียงเชียร์ ---
-            if (totalDist >= 100) {
-                document.getElementById('myMedalDisplay').innerHTML = "🥇🏆🎆";
-                speak("ยินดีด้วยค่ะคุณวิ่งครบ 100 กิโลเมตรแล้ว เก่งมากค่ะคุณ " + name);
-            } else {
-                document.getElementById('myMedalDisplay').innerHTML = "🏃‍♂️";
-                speak("สวัสดีค่ะคุณ " + name + " ตอนนี้คุณวิ่งไปแล้ว " + totalDist.toFixed(2) + " กิโลเมตร สู้ต่อไปนะคะ");
-            }
+        // 4. เสียงทักทาย
+        speak("สวัสดีค่ะคุณ " + name + " ตอนนี้คุณวิ่งไปแล้ว " + totalDist.toFixed(2) + " กิโลเมตร");
 
-        } else {
-            alert("ไม่พบข้อมูลการวิ่งของ BIB นี้");
-        }
     } catch(e) {
-        console.error("Error loading stats:", e);
-        alert("เกิดข้อผิดพลาดในการโหลดข้อมูล กรุณาลองใหม่อีกครั้ง");
+        console.error("Error:", e);
+        alert("ระบบขัดข้อง: " + e.message);
     }
     showLoading(false);
 }
