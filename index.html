@@ -368,7 +368,29 @@
         rows.slice(1).forEach(r => {
             const b = String(r[2]).trim();
             if(r[1] === 'RUN') {
-                summary[b] = (summary[b] || 0) + parseFloat(r[5] || 0);
+                summary[b] = (summary[b] || 0) + parseFloat(r[5] || 0);// --- ชุดคำนวณประวัติการวิ่ง ( histArray) ---
+                    if(b === String(inputBib)) {
+                        totalDist += parseFloat(r[5] || 0); // (ของเดิมที่มีอยู่)
+                        
+                        // เริ่มส่วนสร้างการ์ดประวัติ
+                        const d = new Date(r[0]), 
+                              dStr = d.toLocaleDateString('th-TH',{day:'numeric',month:'short'}), 
+                              tStr = d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+                        
+                        let ps = "--:--";
+                        if (parseFloat(r[5]) > 0 && r[6]) {
+                            const diff = new Date(r[0]) - new Date(r[6]);
+                            if (diff > 0 && diff < 18000000) {
+                                const paceDecimal = (diff / 60000) / parseFloat(r[5]);
+                                const pMin = Math.floor(paceDecimal);
+                                const pSec = Math.round((paceDecimal - pMin) * 60);
+                                ps = pMin + ":" + pSec.toString().padStart(2, '0');
+                            }
+                        }
+                        // สร้างโค้ด HTML ของการ์ดประวัติ
+                        histArray.unshift(`<div class="history-card shadow-sm border-start border-primary border-4"><div class="d-flex justify-content-between mb-1"><span class="text-primary fw-bold small">📅 ${dStr} | 🕒 ${tStr}น.</span><span class="badge bg-info text-dark">Pace ${ps}</span><span class="text-success fw-bold">+${parseFloat(r[5]).toFixed(2)} กม.</span></div><div class="small text-muted text-start">📍 ${pointNames[r[4]] || r[4]} ➡️ ${pointNames[r[7]] || r[7]}</div></div>`);
+                    }
+                    // ----------------------------------------
                 if(b === String(inputBib)) totalDist += parseFloat(r[5] || 0);
             }
         });
@@ -396,6 +418,21 @@
         // 4. เสียงทักทาย
         speak("สวัสดีค่ะคุณ " + name + " ตอนนี้คุณวิ่งไปแล้ว " + totalDist.toFixed(2) + " กิโลเมตร");
 
+        // --- 1. สั่งเอาประวัติการวิ่งไปแสดงผล (ต่อจากบรรทัด 420) ---
+        if(document.getElementById('myHistoryList')) {
+            document.getElementById('myHistoryList').innerHTML = `<h6 class="fw-bold mb-2 small mt-3 text-secondary text-start">ประวัติล่าสุด:</h6>` + (histArray.slice(0, 10).join(''));
+        }
+
+        // --- 2. เปิดหน้าจอแสดงผล (เผื่อกรณีสวิตช์หน้าขาว) ---
+        if(document.getElementById('myResultArea')) {
+            document.getElementById('myResultArea').style.display = 'block';
+        }
+        if(document.getElementById('certArea')) {
+            document.getElementById('certArea').style.display = 'block';
+        }
+
+        // --- 3. ปิดท้ายด้วยเสียง (ของเดิมที่อาจารย์มีอยู่แล้ว) ---
+        speak("สวัสดีค่ะคุณ " + name + " ตอนนี้คุณวิ่งไปแล้ว " + totalDist.toFixed(2) + " กิโลเมตร");
     } catch(e) {
         console.error("Error:", e);
         alert("ระบบขัดข้อง: " + e.message);
