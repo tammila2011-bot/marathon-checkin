@@ -349,9 +349,13 @@
     };
 
     async function loadMyStats() {
-    const inputBib = document.getElementById('myBibSearch').value.trim();
+    const inputField = document.getElementById('myBibSearch');
+    const inputBib = inputField.value.trim();
+    
+    // 1. บันทึกความจำลงเครื่อง
     localStorage.setItem('lastUsedBib', inputBib);
     if(!inputBib) return;
+    
     showLoading(true);
     
     try {
@@ -359,7 +363,7 @@
         const rows = await res.json();
         let summary = {};
         
-        // 1. คำนวณอันดับจากข้อมูลทั้งหมด
+        // 2. คำนวณอันดับ (Rank) จากนักวิ่งทุกคน
         rows.slice(1).forEach(r => {
             if(r[1] === 'RUN') {
                 const b = String(r[2]).trim();
@@ -373,17 +377,13 @@
 
         let totalDist = 0, name = "นักวิ่ง", histArray = [];
         
-        // 2. ดึงชื่อจาก REG
+        // 3. ค้นหาชื่อเล่น/ชื่อจริง จากข้อมูลการลงทะเบียน (REG)
         const regRow = rows.slice(1).reverse().find(r => r[1] === 'REG' && String(r[2]).trim() === String(inputBib));
         if (regRow) {
             name = regRow[3];
-            if(document.getElementById('displayRunnerName')) {
-                document.getElementById('displayRunnerName').innerText = name; 
-                document.getElementById('runnerProfile').style.display = 'block';
-            }
         }
 
-        // 3. กรองข้อมูลเฉพาะของ BIB นี้เพื่อหาค่า Total และประวัติ
+        // 4. กรองประวัติการวิ่งเฉพาะของ BIB นี้
         const myRows = rows.slice(1).filter(r => String(r[2]).trim() === String(inputBib));
         
         if(myRows.length > 0) {
@@ -409,18 +409,26 @@
                 }
             });
 
-            // 4. นำค่าที่ได้ไปแสดงผลบนหน้าจอ
+            // --- 5. อัปเดตข้อมูลลงหน้าจอ (UI Update) ---
+            
+            // ใส่ชื่อในกล่องทักทาย
+            if(document.getElementById('displayRunnerName')) {
+                document.getElementById('displayRunnerName').innerText = name;
+            }
+            
+            // ใส่ข้อมูลในหน้าสถิติ
             document.getElementById('myRankDisplay').innerText = "🏆 อันดับที่ " + myRank;
             document.getElementById('myNameDisplay').innerText = name;
             document.getElementById('myDistDisplay').innerText = totalDist.toFixed(2);
             document.getElementById('myProgressBar').style.width = Math.min(totalDist, 100) + '%';
             document.getElementById('myHistoryList').innerHTML = `<h6 class="fw-bold mb-2 small mt-3 text-secondary text-start">ประวัติล่าสุด:</h6>` + (histArray.slice(0, 10).join(''));
             
-            // 5. เปิดหน้าจอแสดงผล
-            document.getElementById('myResultArea').style.display = 'block';
+            // --- 6. เปิดม่านการแสดงผล (หัวใจสำคัญ!) ---
+            if(document.getElementById('runnerProfile')) document.getElementById('runnerProfile').style.display = 'block';
+            if(document.getElementById('myResultArea')) document.getElementById('myResultArea').style.display = 'block';
             if(document.getElementById('certArea')) document.getElementById('certArea').style.display = 'block';
 
-            // 6. เช็คเงื่อนไขเสียง
+            // --- 7. ระบบเสียงเชียร์ ---
             if (totalDist >= 100) {
                 document.getElementById('myMedalDisplay').innerHTML = "🥇🏆🎆";
                 speak("ยินดีด้วยค่ะคุณวิ่งครบ 100 กิโลเมตรแล้ว เก่งมากค่ะคุณ " + name);
@@ -428,12 +436,13 @@
                 document.getElementById('myMedalDisplay').innerHTML = "🏃‍♂️";
                 speak("สวัสดีค่ะคุณ " + name + " ตอนนี้คุณวิ่งไปแล้ว " + totalDist.toFixed(2) + " กิโลเมตร สู้ต่อไปนะคะ");
             }
+
         } else {
             alert("ไม่พบข้อมูลการวิ่งของ BIB นี้");
         }
     } catch(e) {
-        console.error("Error:", e);
-        alert("เกิดข้อผิดพลาดในการโหลดข้อมูล");
+        console.error("Error loading stats:", e);
+        alert("เกิดข้อผิดพลาดในการโหลดข้อมูล กรุณาลองใหม่อีกครั้ง");
     }
     showLoading(false);
 }
