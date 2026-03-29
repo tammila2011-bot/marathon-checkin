@@ -369,12 +369,20 @@
 
             let totalDist = 0, name = "นักวิ่ง", histArray = [];
             const regRow = rows.slice(1).reverse().find(r => r[1] === 'REG' && String(r[2]).trim() === String(inputBib));
-            if(regRow) name = regRow[3];// ส่งชื่อไปแสดงที่หน้า Profile ทักทาย
-        document.getElementById('displayRunnerName').innerText = name;
-        document.getElementById('runnerProfile').style.display = 'block';
+            if (regRow) {
+            name = regRow[3];
+            // 1. ใส่ชื่อในช่องทักทาย
+            document.getElementById('displayRunnerName').innerText = name; 
+            // 2. สั่งให้กล่องทักทายแสดงผล
+            document.getElementById('runnerProfile').style.display = 'block';
+        } // <--- ปิดปีกกาของ if(regRow) ที่บรรทัดนี้
+
+        // 3. (ของเดิม) แสดงข้อมูลในส่วนสถิติด้านล่าง
+        document.getElementById('myNameDisplay').innerText = name; 
+        document.getElementById('myDistDisplay').innerText = personalDist.toFixed(2);
         
-        // ส่วนเดิมที่มีอยู่แล้ว (ถ้ามี)
-        document.getElementById('myNameDisplay').innerText = name;
+        // 4. (บรรทัดสำคัญ) สั่งให้ "กล่องสถิติทั้งหมด" แสดงผลออกมา
+        document.getElementById('myResultArea').style.display = 'block';
 
             const myRows = rows.slice(1).filter(r => String(r[2]).trim() === String(inputBib));
             if(myRows.length > 0) {
