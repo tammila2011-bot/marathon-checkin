@@ -146,13 +146,14 @@
                     <input type="text" id="myBibSearch" class="form-control text-center fw-bold" placeholder="ระบุเลข BIB">
                     <button class="btn btn-primary" onclick="loadMyStats()">ดูสถิติ</button>
                 </div>
-                <div id="runnerProfile" style="text-align: center; margin-bottom: 15px; display: none; background: #f8f9fa; padding: 15px; border-radius: 15px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05);">
+                
+        <div id="runnerProfile" style="display: none; text-align: center; margin-bottom: 15px; background: #f8f9fa; ...">        
         <div style="font-size: 0.9rem; color: #666;">ยินดีต้อนรับกลับมา</div>
         <div id="displayRunnerName" style="font-size: 1.5rem; font-weight: bold; color: #ffc107; text-shadow: 1px 1px 2px rgba(0,0,0,0.1);"></div>
         <button onclick="localStorage.clear(); location.reload();" style="background:none; border:none; color:#888; font-size:0.7rem; text-decoration:underline; cursor:pointer;">(ไม่ใช่ฉัน? คลิกเพื่อเปลี่ยน BIB)</button>
     </div>
 
-    <div id="myResultArea" style="display:none;"> ```
+    <div id="myResultArea" style="display: none;"> 
                 <div id="myResultArea" >
                     <div id="myRankDisplay" class="rank-badge">🏆 อันดับที่ --</div>
                     <h5 id="myNameDisplay" class="fw-bold text-primary mb-1">-</h5>
