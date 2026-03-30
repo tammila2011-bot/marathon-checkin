@@ -391,7 +391,7 @@
                         histArray.unshift(`<div class="history-card shadow-sm border-start border-primary border-4"><div class="d-flex justify-content-between mb-1"><span class="text-primary fw-bold small">📅 ${dStr} | 🕒 ${tStr}น.</span><span class="badge bg-info text-dark">Pace ${ps}</span><span class="text-success fw-bold">+${parseFloat(r[5]).toFixed(2)} กม.</span></div><div class="small text-muted text-start">📍 ${pointNames[r[4]] || r[4]} ➡️ ${pointNames[r[7]] || r[7]}</div></div>`);
                     }
                     // ----------------------------------------
-                if(b === String(inputBib)) totalDist += parseFloat(r[5] || 0);
+               // if(b === String(inputBib)) totalDist += parseFloat(r[5] || 0);
             }
         });
         
