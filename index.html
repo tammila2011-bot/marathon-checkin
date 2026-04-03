@@ -352,91 +352,91 @@
     async function loadMyStats() {
     console.log("เริ่มทำงาน...");
     const inputField = document.getElementById('myBibSearch');
-    if(!inputField) { alert("หาช่องกรอก BIB ไม่เจอ!"); return; }
+    if(!inputField) return;
     
     const inputBib = inputField.value.trim();
-    localStorage.setItem('lastUsedBib', inputBib);
-    if(!inputBib) return;
+    // บันทึก BIB ลงเครื่องทันทีเพื่อกันลืมถ้าเน็ตหลุด
+    if(inputBib) localStorage.setItem('lastUsedBib', inputBib);
+    else return;
     
     showLoading(true);
     
     try {
+        // เพิ่ม Timeout เล็กน้อยเพื่อให้ fetch ทนต่อเน็ตที่เสถียรต่ำ
         const res = await fetch(SCRIPT_URL);
+        if (!res.ok) throw new Error("ไม่สามารถเชื่อมต่อฐานข้อมูลได้");
+        
         const rows = await res.json();
         let summary = {}, totalDist = 0, name = "นักวิ่ง", histArray = [];
         
-        // 1. คำนวณข้อมูล
+        // 1. คำนวณข้อมูล (ลูปเดียวจบ)
         rows.slice(1).forEach(r => {
             const b = String(r[2]).trim();
             if(r[1] === 'RUN') {
-                summary[b] = (summary[b] || 0) + parseFloat(r[5] || 0);// --- ชุดคำนวณประวัติการวิ่ง ( histArray) ---
-                    if(b === String(inputBib)) {
-                        totalDist += parseFloat(r[5] || 0); // (ของเดิมที่มีอยู่)
-                        
-                        // เริ่มส่วนสร้างการ์ดประวัติ
-                        const d = new Date(r[0]), 
-                              dStr = d.toLocaleDateString('th-TH',{day:'numeric',month:'short'}), 
-                              tStr = d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
-                        
-                        let ps = "--:--";
-                        if (parseFloat(r[5]) > 0 && r[6]) {
-                            const diff = new Date(r[0]) - new Date(r[6]);
-                            if (diff > 0 && diff < 18000000) {
-                                const paceDecimal = (diff / 60000) / parseFloat(r[5]);
-                                const pMin = Math.floor(paceDecimal);
-                                const pSec = Math.round((paceDecimal - pMin) * 60);
-                                ps = pMin + ":" + pSec.toString().padStart(2, '0');
-                            }
+                const dist = parseFloat(r[5] || 0);
+                summary[b] = (summary[b] || 0) + dist;
+
+                if(b === String(inputBib)) {
+                    totalDist += dist;
+                    const d = new Date(r[0]), 
+                          dStr = d.toLocaleDateString('th-TH',{day:'numeric',month:'short'}), 
+                          tStr = d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+                    
+                    let ps = "--:--";
+                    if (dist > 0 && r[6]) {
+                        const diff = new Date(r[0]) - new Date(r[6]);
+                        if (diff > 0 && diff < 18000000) {
+                            const paceDecimal = (diff / 60000) / dist;
+                            const pMin = Math.floor(paceDecimal);
+                            const pSec = Math.round((paceDecimal - pMin) * 60);
+                            ps = pMin + ":" + pSec.toString().padStart(2, '0');
                         }
-                        // สร้างโค้ด HTML ของการ์ดประวัติ
-                        histArray.unshift(`<div class="history-card shadow-sm border-start border-primary border-4"><div class="d-flex justify-content-between mb-1"><span class="text-primary fw-bold small">📅 ${dStr} | 🕒 ${tStr}น.</span><span class="badge bg-info text-dark">Pace ${ps}</span><span class="text-success fw-bold">+${parseFloat(r[5]).toFixed(2)} กม.</span></div><div class="small text-muted text-start">📍 ${pointNames[r[4]] || r[4]} ➡️ ${pointNames[r[7]] || r[7]}</div></div>`);
                     }
-                    // ----------------------------------------
-               // if(b === String(inputBib)) totalDist += parseFloat(r[5] || 0);
+                    histArray.unshift(`<div class="history-card shadow-sm border-start border-primary border-4"><div class="d-flex justify-content-between mb-1"><span class="text-primary fw-bold small">📅 ${dStr} | 🕒 ${tStr}น.</span><span class="badge bg-info text-dark">Pace ${ps}</span><span class="text-success fw-bold">+${dist.toFixed(2)} กม.</span></div><div class="small text-muted text-start">📍 ${pointNames[r[4]] || r[4]} ➡️ ${pointNames[r[7]] || r[7]}</div></div>`);
+                }
             }
         });
         
+        // หาอันดับ
         const sortedEntries = Object.entries(summary).sort((a,b) => b[1] - a[1]);
         const rankIndex = sortedEntries.findIndex(([bib]) => bib === String(inputBib));
         const myRank = rankIndex !== -1 ? rankIndex + 1 : "--";
         
+        // หาชื่อจาก REG
         const regRow = rows.slice(1).reverse().find(r => r[1] === 'REG' && String(r[2]).trim() === String(inputBib));
         if (regRow) name = regRow[3];
 
-        // 2. อัปเดตหน้าจอ (ใส่ Try-Catch ย่อยเพื่อไม่ให้ตัวหนึ่งพังแล้วพังหมด)
-        try {
-            if(document.getElementById('displayRunnerName')) document.getElementById('displayRunnerName').innerText = name;
-            if(document.getElementById('myRankDisplay')) document.getElementById('myRankDisplay').innerText = "🏆 อันดับที่ " + myRank;
-            if(document.getElementById('myNameDisplay')) document.getElementById('myNameDisplay').innerText = name;
-            if(document.getElementById('myDistDisplay')) document.getElementById('myDistDisplay').innerText = totalDist.toFixed(2);
-            if(document.getElementById('myProgressBar')) document.getElementById('myProgressBar').style.width = Math.min(totalDist, 100) + '%';
-        } catch(err) { console.log("UI Update บางส่วนติดขัด"); }
+        // 2. อัปเดตหน้าจอ (รวบยอดครั้งเดียว)
+        const updateUI = (id, value, property = 'innerText') => {
+            const el = document.getElementById(id);
+            if(el) el[property] = value;
+        };
 
-        // 3. เปิดม่านแสดงผล
-        if(document.getElementById('runnerProfile')) document.getElementById('runnerProfile').style.display = 'block';
-        if(document.getElementById('myResultArea')) document.getElementById('myResultArea').style.display = 'block';
-
-        // 4. เสียงทักทาย
-        speak("สวัสดีค่ะคุณ " + name + " ตอนนี้คุณวิ่งไปแล้ว " + totalDist.toFixed(2) + " กิโลเมตร");
-
-        // --- 1. สั่งเอาประวัติการวิ่งไปแสดงผล (ต่อจากบรรทัด 420) ---
+        updateUI('displayRunnerName', name);
+        updateUI('myRankDisplay', "🏆 อันดับที่ " + myRank);
+        updateUI('myNameDisplay', name);
+        updateUI('myDistDisplay', totalDist.toFixed(2));
+        if(document.getElementById('myProgressBar')) {
+            document.getElementById('myProgressBar').style.width = Math.min(totalDist, 100) + '%';
+        }
         if(document.getElementById('myHistoryList')) {
             document.getElementById('myHistoryList').innerHTML = `<h6 class="fw-bold mb-2 small mt-3 text-secondary text-start">ประวัติล่าสุด:</h6>` + (histArray.slice(0, 10).join(''));
         }
 
-        // --- 2. เปิดหน้าจอแสดงผล (เผื่อกรณีสวิตช์หน้าขาว) ---
-        if(document.getElementById('myResultArea')) {
-            document.getElementById('myResultArea').style.display = 'block';
-        }
-        if(document.getElementById('certArea')) {
-            document.getElementById('certArea').style.display = 'block';
-        }
+        // 3. เปิดม่านแสดงผลทั้งหมด
+        const sections = ['runnerProfile', 'myResultArea', 'certArea'];
+        sections.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.style.display = 'block';
+        });
 
-        // --- 3. ปิดท้ายด้วยเสียง (ของเดิมที่อาจารย์มีอยู่แล้ว) ---
+        // 4. เสียงทักทาย (บรรทัดเดียวพอครับ)
         speak("สวัสดีค่ะคุณ " + name + " ตอนนี้คุณวิ่งไปแล้ว " + totalDist.toFixed(2) + " กิโลเมตร");
+
     } catch(e) {
         console.error("Error:", e);
-        alert("ระบบขัดข้อง: " + e.message);
+        // ถ้าเน็ตหลุด ให้แจ้งเตือนชัดเจนแต่ยังคงหน้าเดิมไว้
+        alert("ขออภัย! สัญญาณอินเทอร์เน็ตขัดข้อง ข้อมูลล่าสุดอาจยังไม่มา กรุณากดปุ่มค้นหาอีกครั้งเมื่อมีสัญญาณครับ");
     }
     showLoading(false);
 }
