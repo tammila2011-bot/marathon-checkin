@@ -21,18 +21,17 @@
         .history-card { border-radius: 12px; border: 1px solid #eee; background: #fff; padding: 10px; margin-bottom: 8px; font-size: 0.85rem; }
         .btn-voice-unlock { background: #fff; border: 2px solid #6f42c1; color: #6f42c1; border-radius: 50px; padding: 5px 20px; font-weight: 600; font-size: 0.9rem; transition: 0.3s; }
         .rank-badge { background: #6f42c1; color: white; padding: 5px 15px; border-radius: 50px; font-size: 0.9rem; font-weight: 600; display: inline-block; margin-bottom: 10px; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         .hub-label { font-size: 0.8rem; font-weight: 600; color: #666; margin-top: 15px; margin-bottom: 8px; border-bottom: 1px solid #ddd; display: block; }
         .btn-hub { font-weight: 600; border-radius: 12px; margin-bottom: 8px; border: none; }
         .pagination-btn { border-radius: 10px; margin: 2px; min-width: 40px; }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt..." rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
 
 <div id="loading" class="loading-overlay"><div class="spinner-border text-primary"></div></div>
 
+<!-- Modal ข่าวสาร -->
 <div class="modal fade" id="newsModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content" style="border-radius: 20px;">
@@ -43,20 +42,20 @@
       <div class="modal-body text-start"> 
         <h6 class="fw-bold text-primary">🏃‍♂️ วิธีตั้งค่ามือถือก่อนร่วมสนุก:</h6>
         <ol class="small">
-          <li>กดปุ่มตั้งค่าในมือถือ เลือกที่แอป กดแอปเริ่มต้น กดChormeเป็นค่าเริ่มต้น แล้วสแกน QR จากกล้องกูเก้ล </li>
+          <li>กดปุ่มตั้งค่าในมือถือ เลือกที่แอป กดแอปเริ่มต้น กดChromeเป็นค่าเริ่มต้น แล้วสแกน QR จากกล้องกูเกิ้ล</li>
           <li>กด <b>"เปิดระบบเสียง"</b> เพื่อฟัง AI เรียกชื่อ</li>
           <li>ลงทะเบียนด้วย BIB และชื่อเล่น</li>
           <li>สแกน QR ตามจุด A-F แล้วกดบันทึก</li>
-          <li>ระหว่างเดินวิ่งสะสมระยะห้ามรีเฟรชหรือออกจากหน้าเวปวิ่ง แต่สามารถพักหน้าจอมือถิอได้ </li>
+          <li>ระหว่างเดินวิ่งสะสมระยะห้ามรีเฟรชหรือออกจากหน้าเว็บวิ่ง แต่สามารถพักหน้าจอมือถือได้</li>
           <li>เช็กอันดับตัวเองได้ที่เมนู <b>"สถิติฉัน"</b></li>
         </ol>
         <hr>
         <h6 class="fw-bold text-success">🎁 ประกาศและรางวัลสุขภาพดี:</h6>
         <ul class="small">
-            <li>รางวัล Free Run Sunny 2.0 เดินวิ่งทุกระยะ 🥉 รับใบเกียรติบัตรออนไลน์ทันที | 🥈 ครบระยะ 104 กม.เลือกรับจานหรีอถ้วยfinisher104 Km. หรือใช้สิทธิซื้อเสื้อวิ่ง Free Run Sunny2.0 ราคา 129 บาท | 🥇 ครบ Sunny 2.0 ลำดับที่ 1-10 รับโล่รางวัลสุขภาพดี</li>
-            <li> รับรางวัลที่ศาลา 104 ท่าน้ำวัดหลวง วันที่ 6 ธค.69 เวลา 09.00 น. หรือแจ้งสอบถามทาง Inbox เพจ </li>         
-            <li> โครงการ Real Hero Chiangkhong นักวิ่งที่ผลวิ่งสะสมตั้งแต่ 50 กม.ขึ้นไป และร่วมบริจาคโลหิตที่รพ.ยุพราชเชียงของ 1 ครั้ง รับฟรีเสื้อ Real Hero ที่ห้องบริจาคโลหิต รพ.จนกว่าเสื้อหมด  </li>
-            <li> โครงการ Fighting Stoke ผู้ป่วยที่มีทะเบียนในระบบบำบัดสุขภาพ รพ.ยุพราชเชียงของ สามารถร่วมสะสมระยะได้ตั้งแต่ 1 ตค.-5 ธค.69 ครบ 104 กม.รับฟรีเสื้อคู่(ทั้งผู้ป่วยและผู้ดูแล) ดูรายละเอียดในเพจFree Run Sunday@Chiangkhong  </li>
+            <li>รางวัล Free Run Sunny 2.0 เดินวิ่งทุกระยะ 🥉 รับใบเกียรติบัตรออนไลน์ทันที | 🥈 ครบระยะ 104 กม.เลือกรับจานหรือถ้วยfinisher104 Km. หรือใช้สิทธิซื้อเสื้อวิ่ง Free Run Sunny2.0 ราคา 129 บาท | 🥇 ครบ Sunny 2.0 ลำดับที่ 1-10 รับโล่รางวัลสุขภาพดี</li>
+            <li>รับรางวัลที่ศาลา 104 ท่าน้ำวัดหลวง วันที่ 6 ธค.69 เวลา 09.00 น. หรือแจ้งสอบถามทาง Inbox เพจ</li>         
+            <li>โครงการ Real Hero Chiangkhong นักวิ่งที่ผลวิ่งสะสมตั้งแต่ 50 กม.ขึ้นไป และร่วมบริจาคโลหิตที่รพ.ยุพราชเชียงของ 1 ครั้ง รับฟรีเสื้อ Real Hero ที่ห้องบริจาคโลหิต รพ.จนกว่าเสื้อหมด</li>
+            <li>โครงการ Fighting Stroke ผู้ป่วยที่มีทะเบียนในระบบบำบัดสุขภาพ รพ.ยุพราชเชียงของ สามารถร่วมสะสมระยะได้ตั้งแต่ 1 ตค.-5 ธค.69 ครบ 104 กม.รับฟรีเสื้อคู่(ทั้งผู้ป่วยและผู้ดูแล) ดูรายละเอียดในเพจFree Run Sunday@Chiangkhong</li>
         </ul>
       </div>
     </div>
@@ -80,6 +79,7 @@
     </ul>
 
     <div class="tab-content">
+        <!-- TAB 1: REG -->
         <div class="tab-pane fade show active" id="tab-reg">
             <div class="card p-4 mx-auto" style="max-width: 400px;">
                 <h6 class="mb-3 fw-bold text-center text-primary">ลงทะเบียนใหม่ / แก้ไขชื่อ</h6>
@@ -100,6 +100,7 @@
             </div>
         </div>
 
+        <!-- TAB 2: RUN -->
         <div class="tab-pane fade" id="tab-run">
             <div class="card p-3 mx-auto" style="max-width: 500px;">
                 <input type="text" id="scanBib" class="form-control text-center mb-3 border-primary fw-bold" placeholder="ระบุเลข BIB">
@@ -120,6 +121,7 @@
             </div>
         </div>
 
+        <!-- TAB 3: STAT (RANKING) -->
         <div class="tab-pane fade" id="tab-stat">
             <div class="card p-3">
                 <div class="total-km-box shadow-sm">
@@ -141,6 +143,7 @@
             </div>
         </div>
 
+        <!-- TAB 4: ME -->
         <div class="tab-pane fade" id="tab-me">
             <div class="card p-3 mx-auto text-center" style="max-width: 500px;">
                 <div class="input-group mb-3">
@@ -148,25 +151,23 @@
                     <button class="btn btn-primary" onclick="loadMyStats()">ดูสถิติ</button>
                 </div>
                 
-        <div id="runnerProfile" style="display: none; text-align: center; margin-bottom: 15px; background: #f8f9fa; ...">        
-        <div style="font-size: 0.9rem; color: #666;">ยินดีต้อนรับกลับมา</div>
-        <div id="displayRunnerName" style="font-size: 1.5rem; font-weight: bold; color: #ffc107; text-shadow: 1px 1px 2px rgba(0,0,0,0.1);"></div>
-        <button onclick="localStorage.clear(); location.reload();" style="background:none; border:none; color:#888; font-size:0.7rem; text-decoration:underline; cursor:pointer;">(ไม่ใช่ฉัน? คลิกเพื่อเปลี่ยน BIB)</button>
-    </div>
+                <div id="runnerProfile" style="display: none; text-align: center; margin-bottom: 15px; background: #f8f9fa; padding: 10px; border-radius: 12px;">        
+                    <div style="font-size: 0.9rem; color: #666;">ยินดีต้อนรับกลับมา</div>
+                    <div id="displayRunnerName" style="font-size: 1.5rem; font-weight: bold; color: #ffc107; text-shadow: 1px 1px 2px rgba(0,0,0,0.1);"></div>
+                    <button onclick="localStorage.clear(); location.reload();" style="background:none; border:none; color:#888; font-size:0.7rem; text-decoration:underline; cursor:pointer;">(ไม่ใช่ฉัน? คลิกเพื่อเปลี่ยน BIB)</button>
+                </div>
 
-    <div id="myResultArea" style="display: none;"> 
-                <div id="myResultArea" >
+                <div id="myResultArea" style="display: none;">
                     <div id="myRankDisplay" class="rank-badge">🏆 อันดับที่ --</div>
                     <h5 id="myNameDisplay" class="fw-bold text-primary mb-1">-</h5>
                     <div id="myMedalDisplay" style="font-size:3rem; margin:10px 0;">🏃‍♂️</div>
                      
- <div id="certArea" class="mt-3" style="display:none;">
-    <button onclick="generateCertificate()" class="btn btn-warning w-100 shadow-sm fw-bold p-3" style="border-radius:15px;">
-        📜 รับเกียรติบัตรออนไลน์และฟังเพลง Free Run Sunny
-    </button>
-     
-<canvas id="certCanvas" style="display:none;"></canvas>
- </div>
+                    <div id="certArea" class="mt-3" style="display:none;">
+                        <button onclick="generateCertificate()" class="btn btn-warning w-100 shadow-sm fw-bold p-3" style="border-radius:15px;">
+                            📜 รับเกียรติบัตรออนไลน์และฟังเพลง Free Run Sunny
+                        </button>
+                        <canvas id="certCanvas" style="display:none;"></canvas>
+                    </div>
 
                     <div class="px-3 mt-3">
                         <div class="progress" style="height:12px; background:#eee; border-radius:10px; margin:10px 0;">
@@ -190,8 +191,8 @@
     const pointNames = { 'A':'ทิชเชอร์แค้มป์', 'B':'ตำมิละ', 'C':'วัดหลวง', 'D':'เสาพญานาค', 'E':'วัดหาดไคร้', 'F':'ปลาบึกสีทอง' };
     
     let html5QrCode, activeSession = null;
-    let fullSortedData = []; // เก็บข้อมูลอันดับทั้งหมดไว้แบ่งหน้า
-    let namesDict = {}; // เก็บชื่อนักวิ่งทั้งหมด
+    let fullSortedData = []; 
+    let namesDict = {};
 
     async function startScanner() {
         try {
@@ -221,120 +222,106 @@
     }
 
     async function handleScannedPoint(p) {
-    // 1. ล้างปุ่มจุดอื่นๆ ออกก่อน และหาปุ่มของจุดที่เพิ่งสแกนเจอ
-    document.querySelectorAll('.btn-checkpoint').forEach(b => b.style.display = 'none');
-    const btn = document.getElementById('btn' + p);
-    
-    if (btn) { 
-        // 2. โชว์ปุ่มทันที แต่ล็อคไว้ก่อน (Disabled) เพื่อรอจังหวะเสียง
-        btn.style.display = 'block'; 
-        btn.disabled = true; 
-        btn.innerText = "กำลังตรวจสอบจุด... ⏳";
-        btn.style.backgroundColor = "#6c757d"; // เปลี่ยนเป็นสีเทาเข้มชั่วคราว
+        document.querySelectorAll('.btn-checkpoint').forEach(b => b.style.display = 'none');
+        const btn = document.getElementById('btn' + p);
         
-        document.getElementById('scanStatus').innerText = "📍 พบจุด: " + pointNames[p]; 
-        
-        const bib = document.getElementById('scanBib').value.trim();
-        const name = await getNameFromDatabase(bib);
-
-        // --- 3. หน่วงเวลา 5 วินาที ก่อนจะเริ่ม "พูด" และ "เปิดให้กดบันทึก" ---
-        setTimeout(() => {
-            speak("พบจุดสแกนที่ " + pointNames[p] + " ของคุณ " + name + " ค่ะ");
+        if (btn) { 
+            btn.style.display = 'block'; 
+            btn.disabled = true; 
+            btn.innerText = "กำลังตรวจสอบจุด... ⏳";
+            btn.style.backgroundColor = "#6c757d";
             
-            // ปรับปุ่มให้เป็นสีเขียวและกดบันทึกได้
-            btn.disabled = false;
-            btn.innerText = "บันทึกจุด " + p;
-            btn.style.backgroundColor = ""; // คืนค่าสีเขียวตาม CSS เดิม
-            btn.style.borderColor = "";
-        }, 5000); 
+            document.getElementById('scanStatus').innerText = "📍 พบจุด: " + pointNames[p]; 
+            
+            const bib = document.getElementById('scanBib').value.trim();
+            const name = await getNameFromDatabase(bib);
+
+            setTimeout(() => {
+                speak("พบจุดสแกนที่ " + pointNames[p] + " ของคุณ " + name + " ค่ะ");
+                btn.disabled = false;
+                btn.innerText = "บันทึกจุด " + p;
+                btn.style.backgroundColor = "";
+                btn.style.borderColor = "";
+            }, 5000); 
+        }
     }
-}
 
     async function getNameFromDatabase(bib) {
+        if(!bib) return "นักวิ่ง";
         try {
-            const res = await fetch(SCRIPT_URL);
-            const rows = await res.json();
-            const regRow = rows.slice(1).reverse().find(r => r[1] === 'REG' && String(r[2]).trim() === String(bib));
-            return regRow ? regRow[3] : "นักวิ่ง";
+            const res = await fetch(`${SCRIPT_URL}?action=getMyStats&bib=${encodeURIComponent(bib)}`);
+            const data = await res.json();
+            return data.name || "นักวิ่ง";
         } catch(e) { return "นักวิ่ง"; }
     }
 
     function resetScannerUI() {
-    // 1. ซ่อนปุ่มบันทึกจุดทั้งหมด (A-F)
-    document.querySelectorAll('.btn-checkpoint').forEach(btn => {
-        btn.style.display = 'none';
-        btn.disabled = false;     // ปลดล็อคปุ่มให้กลับมาใช้งานได้ในครั้งหน้า
-        btn.style.backgroundColor = ""; // คืนสีเดิม (สีเขียว)
-        // คืนข้อความปุ่มตาม ID (เช่น btnA -> บันทึกจุด A)
-        const code = btn.id.replace('btn', '');
-        btn.innerText = "บันทึกจุด " + code;
-    });
+        document.querySelectorAll('.btn-checkpoint').forEach(btn => {
+            btn.style.display = 'none';
+            btn.disabled = false;
+            btn.style.backgroundColor = "";
+            const code = btn.id.replace('btn', '');
+            btn.innerText = "บันทึกจุด " + code;
+        });
 
-    // 2. รีเซ็ตข้อความสถานะ
-    const statusLabel = document.getElementById('scanStatus');
-    if(statusLabel) statusLabel.innerText = "พร้อมเช็คอิน...";
+        const statusLabel = document.getElementById('scanStatus');
+        if(statusLabel) statusLabel.innerText = "พร้อมเช็คอิน...";
 
-    // 3. โชว์ปุ่มเปิดกล้อง (ถ้ามันถูกซ่อนอยู่)
-    const startBtn = document.getElementById('startScanBtn');
-    if(startBtn) startBtn.style.display = 'block';
-}
+        const startBtn = document.getElementById('startScanBtn');
+        if(startBtn) startBtn.style.display = 'block';
+    }
+
     async function checkPoint(code) {
-    const bib = document.getElementById('scanBib').value.trim();
-    if(!bib) return alert('ระบุ BIB');
-    
-    // 1. เปลี่ยนสีปุ่มทันทีที่กด เพื่อบอกว่า "รับทราบการกดแล้ว"
-    const currentBtn = document.getElementById('btn' + code);
-    if(currentBtn) {
-        currentBtn.style.backgroundColor = "#ccc"; 
-        currentBtn.style.borderColor = "#bbb";
-        currentBtn.innerText = "กำลังบันทึก... ⏳";
-        currentBtn.disabled = true; 
-    }
-
-    showLoading(true);
-    const name = await getNameFromDatabase(bib);
-    const now = new Date();
-    
-    let msg = "";
-    if(!activeSession) {
-        activeSession = { start: code, bib: bib, startTime: now.toISOString() };
-        msg = "บันทึกจุดสแกนที่ " + pointNames[code] + " เรียบร้อยแล้ว วิ่งต่อไปได้ค่ะคุณ " + name + " สู้ๆ นะคะ";
-        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'record', bib: bib, name: name, start: code, end: code, distance: 0 }) });
-    } else {
-        const dist = Math.abs(distances[code] - distances[activeSession.start]);
-        if(dist === 0) { 
-            showLoading(false); 
-            if(currentBtn) { 
-                currentBtn.disabled = false;
-                currentBtn.style.backgroundColor = ""; 
-                currentBtn.innerText = "บันทึกจุด " + code;
-            }
-            return speak("อยู่ที่จุดเดิมค่ะคุณ " + name); 
-        }
-        msg = "บันทึกจุดสแกนที่ " + pointNames[code] + " เรียบร้อยแล้ว ระยะเพิ่ม " + dist + " กิโลเมตร วิ่งต่อไปได้ค่ะคุณ " + name + " สู้ๆ นะคะ";
-        try {
-            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'record', bib: bib, name: name, start: activeSession.start, end: code, distance: dist, startTime: activeSession.startTime }) });
-            activeSession = { start: code, bib: bib, startTime: now.toISOString() };
-        } catch(e) {}
-    }
-    
-    showLoading(false);
-
-    // --- ส่วนที่ปรับใหม่: หน่วงเวลา 5 วินาที ก่อนจะเริ่ม "พูด" และ "กระโดดหน้าจอ" ---
-    setTimeout(() => {
-        // เริ่มพูดหลังจากผ่านไป 5 วินาที
-        speak(msg); 
+        const bib = document.getElementById('scanBib').value.trim();
+        if(!bib) return alert('ระบุ BIB');
         
-        // เปลี่ยนข้อความที่ปุ่มให้ดูสวยงาม
-        if(currentBtn) currentBtn.innerText = "บันทึกสำเร็จแล้ว ✅";
+        const currentBtn = document.getElementById('btn' + code);
+        if(currentBtn) {
+            currentBtn.style.backgroundColor = "#ccc"; 
+            currentBtn.style.borderColor = "#bbb";
+            currentBtn.innerText = "กำลังบันทึก... ⏳";
+            currentBtn.disabled = true; 
+        }
 
-        // กระโดดไปหน้าสถิติฉัน
-        document.getElementById('myBibSearch').value = bib;
-        bootstrap.Tab.getOrCreateInstance(document.getElementById('pills-me-tab')).show();
-        loadMyStats();
-        resetScannerUI(); 
-    }, 5000); // หน่วงเวลา 5000ms = 5 วินาที
-}
+        showLoading(true);
+        const name = await getNameFromDatabase(bib);
+        const now = new Date();
+        
+        let msg = "";
+        if(!activeSession) {
+            activeSession = { start: code, bib: bib, startTime: now.toISOString() };
+            msg = "บันทึกจุดสแกนที่ " + pointNames[code] + " เรียบร้อยแล้ว วิ่งต่อไปได้ค่ะคุณ " + name + " สู้ๆ นะคะ";
+            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'record', bib: bib, name: name, start: code, end: code, distance: 0 }) });
+        } else {
+            const dist = Math.abs(distances[code] - distances[activeSession.start]);
+            if(dist === 0) { 
+                showLoading(false); 
+                if(currentBtn) { 
+                    currentBtn.disabled = false;
+                    currentBtn.style.backgroundColor = ""; 
+                    currentBtn.innerText = "บันทึกจุด " + code;
+                }
+                return speak("อยู่ที่จุดเดิมค่ะคุณ " + name); 
+            }
+            msg = "บันทึกจุดสแกนที่ " + pointNames[code] + " เรียบร้อยแล้ว ระยะเพิ่ม " + dist + " กิโลเมตร วิ่งต่อไปได้ค่ะคุณ " + name + " สู้ๆ นะคะ";
+            try {
+                await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'record', bib: bib, name: name, start: activeSession.start, end: code, distance: dist, startTime: activeSession.startTime }) });
+                activeSession = { start: code, bib: bib, startTime: now.toISOString() };
+            } catch(e) {}
+        }
+        
+        showLoading(false);
+
+        setTimeout(() => {
+            speak(msg); 
+            if(currentBtn) currentBtn.innerText = "บันทึกสำเร็จแล้ว ✅";
+
+            document.getElementById('myBibSearch').value = bib;
+            bootstrap.Tab.getOrCreateInstance(document.getElementById('pills-me-tab')).show();
+            loadMyStats();
+            resetScannerUI(); 
+        }, 5000); 
+    }
 
     document.getElementById('regForm').onsubmit = async (e) => {
         e.preventDefault();
@@ -350,249 +337,194 @@
         showLoading(false);
     };
 
+    // 🚀 โหลดสถิติตัวเองแบบติดเทอร์โบ
     async function loadMyStats() {
-    console.log("เริ่มทำงาน...");
-    const inputField = document.getElementById('myBibSearch');
-    if(!inputField) return;
-    
-    const inputBib = inputField.value.trim();
-    // บันทึก BIB ลงเครื่องทันทีเพื่อกันลืมถ้าเน็ตหลุด
-    if(inputBib) localStorage.setItem('lastUsedBib', inputBib);
-    else return;
-    
-    showLoading(true);
-    
-    try {
-        // เพิ่ม Timeout เล็กน้อยเพื่อให้ fetch ทนต่อเน็ตที่เสถียรต่ำ
-        const res = await fetch(SCRIPT_URL);
-        if (!res.ok) throw new Error("ไม่สามารถเชื่อมต่อฐานข้อมูลได้");
+        const inputField = document.getElementById('myBibSearch');
+        if(!inputField) return;
         
-        const rows = await res.json();
-        let summary = {}, totalDist = 0, name = "นักวิ่ง", histArray = [];
+        const inputBib = inputField.value.trim();
+        if(inputBib) localStorage.setItem('lastUsedBib', inputBib);
+        else return;
         
-        // 1. คำนวณข้อมูล (ลูปเดียวจบ)
-        rows.slice(1).forEach(r => {
-            const b = String(r[2]).trim();
-            if(r[1] === 'RUN') {
+        showLoading(true);
+        
+        try {
+            const res = await fetch(`${SCRIPT_URL}?action=getMyStats&bib=${encodeURIComponent(inputBib)}`);
+            if (!res.ok) throw new Error("ไม่สามารถเชื่อมต่อฐานข้อมูลได้");
+            
+            const data = await res.json();
+            const { name, totalDist, rank, history } = data;
+            
+            let histArray = history.map(r => {
+                const d = new Date(r[0]), 
+                      dStr = d.toLocaleDateString('th-TH',{day:'numeric',month:'short'}), 
+                      tStr = d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
                 const dist = parseFloat(r[5] || 0);
-                summary[b] = (summary[b] || 0) + dist;
-
-                if(b === String(inputBib)) {
-                    totalDist += dist;
-                    const d = new Date(r[0]), 
-                          dStr = d.toLocaleDateString('th-TH',{day:'numeric',month:'short'}), 
-                          tStr = d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
-                    
-                    let ps = "--:--";
-                    if (dist > 0 && r[6]) {
-                        const diff = new Date(r[0]) - new Date(r[6]);
-                        if (diff > 0 && diff < 18000000) {
-                            const paceDecimal = (diff / 60000) / dist;
-                            const pMin = Math.floor(paceDecimal);
-                            const pSec = Math.round((paceDecimal - pMin) * 60);
-                            ps = pMin + ":" + pSec.toString().padStart(2, '0');
-                        }
+                
+                let ps = "--:--";
+                if (dist > 0 && r[6]) {
+                    const diff = new Date(r[0]) - new Date(r[6]);
+                    if (diff > 0 && diff < 18000000) {
+                        const paceDecimal = (diff / 60000) / dist;
+                        const pMin = Math.floor(paceDecimal);
+                        const pSec = Math.round((paceDecimal - pMin) * 60);
+                        ps = pMin + ":" + pSec.toString().padStart(2, '0');
                     }
-                    histArray.unshift(`<div class="history-card shadow-sm border-start border-primary border-4"><div class="d-flex justify-content-between mb-1"><span class="text-primary fw-bold small">📅 ${dStr} | 🕒 ${tStr}น.</span><span class="badge bg-info text-dark">Pace ${ps}</span><span class="text-success fw-bold">+${dist.toFixed(2)} กม.</span></div><div class="small text-muted text-start">📍 ${pointNames[r[4]] || r[4]} ➡️ ${pointNames[r[7]] || r[7]}</div></div>`);
                 }
+                return `<div class="history-card shadow-sm border-start border-primary border-4"><div class="d-flex justify-content-between mb-1"><span class="text-primary fw-bold small">📅 ${dStr} | 🕒 ${tStr}น.</span><span class="badge bg-info text-dark">Pace ${ps}</span><span class="text-success fw-bold">+${dist.toFixed(2)} กม.</span></div><div class="small text-muted text-start">📍 ${pointNames[r[4]] || r[4]} ➡️ ${pointNames[r[7]] || r[7]}</div></div>`;
+            });
+
+            const updateUI = (id, value, property = 'innerText') => {
+                const el = document.getElementById(id);
+                if(el) el[property] = value;
+            };
+
+            updateUI('displayRunnerName', name);
+            updateUI('myRankDisplay', "🏆 อันดับที่ " + rank);
+            updateUI('myNameDisplay', name);
+            updateUI('myDistDisplay', totalDist.toFixed(2));
+            
+            if(document.getElementById('myProgressBar')) {
+                document.getElementById('myProgressBar').style.width = Math.min(totalDist, 100) + '%';
             }
-        });
-        
-        // หาอันดับ
-        const sortedEntries = Object.entries(summary).sort((a,b) => b[1] - a[1]);
-        const rankIndex = sortedEntries.findIndex(([bib]) => bib === String(inputBib));
-        const myRank = rankIndex !== -1 ? rankIndex + 1 : "--";
-        
-        // หาชื่อจาก REG
-        const regRow = rows.slice(1).reverse().find(r => r[1] === 'REG' && String(r[2]).trim() === String(inputBib));
-        if (regRow) name = regRow[3];
-
-        // 2. อัปเดตหน้าจอ (รวบยอดครั้งเดียว)
-        const updateUI = (id, value, property = 'innerText') => {
-            const el = document.getElementById(id);
-            if(el) el[property] = value;
-        };
-
-        updateUI('displayRunnerName', name);
-        updateUI('myRankDisplay', "🏆 อันดับที่ " + myRank);
-        updateUI('myNameDisplay', name);
-        updateUI('myDistDisplay', totalDist.toFixed(2));
-        if(document.getElementById('myProgressBar')) {
-            document.getElementById('myProgressBar').style.width = Math.min(totalDist, 100) + '%';
-        }
-        if(document.getElementById('myHistoryList')) {
-            document.getElementById('myHistoryList').innerHTML = `<h6 class="fw-bold mb-2 small mt-3 text-secondary text-start">ประวัติล่าสุด:</h6>` + (histArray.slice(0, 10).join(''));
-        }
-
-        // 3. เปิดม่านแสดงผลทั้งหมด
-        const sections = ['runnerProfile', 'myResultArea', 'certArea'];
-        sections.forEach(id => {
-            const el = document.getElementById(id);
-            if(el) el.style.display = 'block';
-        });
-
-        // 4. เสียงทักทาย (บรรทัดเดียวพอครับ)
-        speak("สวัสดีค่ะคุณ " + name + " ตอนนี้คุณวิ่งไปแล้ว " + totalDist.toFixed(2) + " กิโลเมตร");
-
-    } catch(e) {
-        console.error("Error:", e);
-        // ถ้าเน็ตหลุด ให้แจ้งเตือนชัดเจนแต่ยังคงหน้าเดิมไว้
-        alert("ขออภัย! สัญญาณอินเทอร์เน็ตขัดข้อง ข้อมูลล่าสุดอาจยังไม่มา กรุณากดปุ่มค้นหาอีกครั้งเมื่อมีสัญญาณครับ");
-    }
-    showLoading(false);
-}
-
-    async function generateCertificate() {
-    showLoading(true);
-
-    try {
-        // --- 0. เริ่มเปิดเพลงประกอบ ---
-        const victoryMusic = new Audio('https://raw.githubusercontent.com/tammila2011-bot/marathon-checkin/main/Free%20Run%20Sunny.mp3');
-        victoryMusic.volume = 0.35; 
-        victoryMusic.play();
-
-        // --- 1. เตรียมข้อมูลสำหรับเสียงพูด ---
-        const nameForSpeak = document.getElementById('myNameDisplay').innerText;
-        const distForSpeak = document.getElementById('myDistDisplay').innerText;
-        const rankRaw = document.getElementById('myRankDisplay').innerText;
-        const rankForSpeak = rankRaw.replace('🏆 อันดับที่ ', '').replace('อันดับที่ ', '').trim();
-
-        const congratsMsg = "ขอแสดงความยินดีและมอบใบเกียรติบัตรแก่คุณ " + nameForSpeak + 
-                            " ที่เข้าร่วมวิ่งโครงการ ฟรี รัน ซันนี่ " +
-                            " สะสมระยะทางได้ " + distForSpeak + " กิโลเมตร " +
-                            " ลำดับที่ " + rankForSpeak + " ยินดีด้วยค่ะ";
-        
-        setTimeout(() => {
-            speak(congratsMsg);
-        }, 1000);
-
-        // --- 2. เตรียม Canvas วาดรูป ---
-        const canvas = document.getElementById('certCanvas');
-        const ctx = canvas.getContext('2d');
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.src = 'https://raw.githubusercontent.com/tammila2011-bot/marathon-checkin/main/Certificate.png';
-
-        img.onload = function() {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-            
-            ctx.textAlign = 'center';
-            ctx.fillStyle = '#FFFFFF';
-            const name = document.getElementById('myNameDisplay').innerText;
-            
-            ctx.font = 'bold 85px "Prompt", sans-serif'; 
-            ctx.fillText(name, canvas.width / 2, canvas.height * 0.465); 
-            
-            const dist = document.getElementById('myDistDisplay').innerText;
-            ctx.font = 'bold 75px "Prompt", sans-serif';
-            ctx.fillText(dist, canvas.width * 0.355, canvas.height * 0.700); 
-
-            const d = new Date();
-            const dateStr = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
-            ctx.font = '45px "Prompt", sans-serif';
-            ctx.fillText(dateStr, canvas.width * 0.655, canvas.height * 0.700); 
-
-            // --- 4. แสดงผลใบประกาศในหน้าใหม่ ---
-            const dataUrl = canvas.toDataURL('image/png');
-            showLoading(false);
-            
-            const win = window.open('', '_blank');
-            if (win) {
-                win.document.write(`
-                    <html>
-                    <head>
-                        <title>ใบเกียรติบัตรของคุณ ${nameForSpeak}</title>
-                        <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;600&display=swap" rel="stylesheet">
-                        <style>
-                            body { margin:0; background:#1a1a1a; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; font-family:'Prompt', sans-serif; color:white; }
-                            img { max-width:90%; border-radius:15px; box-shadow:0 10px 30px rgba(0,0,0,0.5); border: 2px solid #ffc107; animation: fadeIn 1s ease-in; transition: transform 0.3s; }
-                            img:hover { transform: scale(1.02); }
-                            .btn-save { margin-top: 20px; padding: 12px 25px; background:#ffc107; color:#000; border-radius:25px; text-decoration:none; font-weight:bold; cursor:pointer; }
-                            .msg { margin-bottom: 15px; font-size: 1.2rem; text-align: center; }
-                            @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="msg">✨ ยินดีด้วยกับความสำเร็จของคุณ ${nameForSpeak} ✨</div>
-                        <img src="${dataUrl}">
-                        <a href="${dataUrl}" download="FreeRunSunny_Certificate.png" class="btn-save">💾 บันทึกรูปภาพ</a>
-                        <p style="font-size:0.8rem; margin-top:10px; color:#888;">(กดค้างที่รูปหรือกดปุ่มเพื่อบันทึก)</p>
-                    </body>
-                    </html>
-                `);
-                win.document.close();
-            } else {
-                alert("ยินดีด้วยค่ะ! อย่าลืมกดอนุญาต Pop-up เพื่อชมใบเกียรติบัตรของคุณนะคะ");
+            if(document.getElementById('myHistoryList')) {
+                document.getElementById('myHistoryList').innerHTML = `<h6 class="fw-bold mb-2 small mt-3 text-secondary text-start">ประวัติล่าสุด:</h6>` + (histArray.join(''));
             }
-        };
 
-        img.onerror = function() { 
-            showLoading(false); 
-            alert("ไม่สามารถดึงรูปใบประกาศได้"); 
-        };
+            ['runnerProfile', 'myResultArea', 'certArea'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.style.display = 'block';
+            });
 
-    } catch (error) {
-        console.error("Error in generateCertificate:", error);
+            speak("สวัสดีค่ะคุณ " + name + " ตอนนี้คุณวิ่งไปแล้ว " + totalDist.toFixed(2) + " กิโลเมตร");
+
+        } catch(e) {
+            console.error("Error:", e);
+            alert("ขออภัย! สัญญาณอินเทอร์เน็ตขัดข้อง กรุณาลองใหม่อีกครั้งครับ");
+        }
         showLoading(false);
     }
-} // ปิดฟังก์ชันที่ถูกต้อง
 
-// 3. ปรับปรุงหน้าอันดับรวมให้แบ่งหน้า (Pagination)
-async function fetchDataFromCloud() {
-    showLoading(true);
-    try {
-        const res = await fetch(SCRIPT_URL);
-        const rows = await res.json();
-        let summary = {}, grandTotal = 0;
-        namesDict = {};
-        rows.slice(1).forEach(r => {
-            const bib = String(r[2]).trim(), type = r[1], val = r[3], d = parseFloat(r[5] || 0);
-            if(type === 'REG') namesDict[bib] = val;
-            if(type === 'RUN') { summary[bib] = (summary[bib] || 0) + d; grandTotal += d; }
-        });
-        // 1. อัปเดตตัวเลขรวมบนหน้าจอ
-        document.getElementById('grandTotalKm').innerText = grandTotal.toFixed(2);
-        
-        // 2. จัดเรียงข้อมูลอันดับ (Sorted Data)
-        fullSortedData = Object.entries(summary).sort((a, b) => b[1] - a[1]);
+    async function generateCertificate() {
+        showLoading(true);
+        try {
+            const victoryMusic = new Audio('https://raw.githubusercontent.com/tammila2011-bot/marathon-checkin/main/Free%20Run%20Sunny.mp3');
+            victoryMusic.volume = 0.35; 
+            victoryMusic.play();
 
-        // 3. ระบบจุดพลุฉลองทุกๆ 1,000 กม. (เริ่มที่ 5,000)
-        if (grandTotal >= 5000) {
-            const currentMilestone = Math.floor(grandTotal / 1000) * 1000;
+            const nameForSpeak = document.getElementById('myNameDisplay').innerText;
+            const distForSpeak = document.getElementById('myDistDisplay').innerText;
+            const rankRaw = document.getElementById('myRankDisplay').innerText;
+            const rankForSpeak = rankRaw.replace('🏆 อันดับที่ ', '').replace('อันดับที่ ', '').trim();
+
+            const congratsMsg = "ขอแสดงความยินดีและมอบใบเกียรติบัตรแก่คุณ " + nameForSpeak + 
+                                " ที่เข้าร่วมวิ่งโครงการ ฟรี รัน ซันนี่ " +
+                                " สะสมระยะทางได้ " + distForSpeak + " กิโลเมตร " +
+                                " ลำดับที่ " + rankForSpeak + " ยินดีด้วยค่ะ";
             
-            // เช็กเพื่อให้พลุแตกแค่ครั้งเดียวเมื่อถึงหลักพันนั้นๆ
-            if (window.lastMilestone !== currentMilestone) {
-                triggerConfetti(); // เรียกฟังก์ชันพลุ
-                window.lastMilestone = currentMilestone; 
-            }
-        }
-        
-        changePage(1); // แสดงหน้าแรก 30 คน
-    } catch(e) {
-        console.error("Error fetching data:", e);
-    }
-    showLoading(false);
-}
+            setTimeout(() => { speak(congratsMsg); }, 1000);
 
-function changePage(pageNo) {
-    const pageSize = 30;
-    const start = (pageNo - 1) * pageSize;
-    const end = start + pageSize;
-    const pageData = fullSortedData.slice(start, end);
-    
-    // อัปเดตตาราง
-    document.getElementById('top10Body').innerHTML = pageData.map(([bib, d], i) => 
-        `<tr><td>${start + i + 1}</td><td><span class="badge bg-dark">${bib}</span></td><td><b>${namesDict[bib] || 'นักวิ่ง'}</b></td><td class="text-end fw-bold text-primary">${d.toFixed(2)}</td></tr>`
-    ).join('');
-    
-    // สลับสถานะปุ่ม
-    document.querySelectorAll('.pagination-btn').forEach((btn, idx) => {
-        if (idx + 1 === pageNo) btn.classList.add('active');
-        else btn.classList.remove('active');
-    });
-}
+            const canvas = document.getElementById('certCanvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.src = 'https://raw.githubusercontent.com/tammila2011-bot/marathon-checkin/main/Certificate.png';
+
+            img.onload = function() {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#FFFFFF';
+                const name = document.getElementById('myNameDisplay').innerText;
+                
+                ctx.font = 'bold 85px "Prompt", sans-serif'; 
+                ctx.fillText(name, canvas.width / 2, canvas.height * 0.465); 
+                
+                const dist = document.getElementById('myDistDisplay').innerText;
+                ctx.font = 'bold 75px "Prompt", sans-serif';
+                ctx.fillText(dist, canvas.width * 0.355, canvas.height * 0.700); 
+
+                const d = new Date();
+                const dateStr = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
+                ctx.font = '45px "Prompt", sans-serif';
+                ctx.fillText(dateStr, canvas.width * 0.655, canvas.height * 0.700); 
+
+                const dataUrl = canvas.toDataURL('image/png');
+                showLoading(false);
+                
+                const win = window.open('', '_blank');
+                if (win) {
+                    win.document.write(`
+                        <html>
+                        <head>
+                            <title>ใบเกียรติบัตรของคุณ ${nameForSpeak}</title>
+                            <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;600&display=swap" rel="stylesheet">
+                            <style>
+                                body { margin:0; background:#1a1a1a; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; font-family:'Prompt', sans-serif; color:white; }
+                                img { max-width:90%; border-radius:15px; box-shadow:0 10px 30px rgba(0,0,0,0.5); border: 2px solid #ffc107; animation: fadeIn 1s ease-in; transition: transform 0.3s; }
+                                img:hover { transform: scale(1.02); }
+                                .btn-save { margin-top: 20px; padding: 12px 25px; background:#ffc107; color:#000; border-radius:25px; text-decoration:none; font-weight:bold; cursor:pointer; }
+                                .msg { margin-bottom: 15px; font-size: 1.2rem; text-align: center; }
+                                @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="msg">✨ ยินดีด้วยกับความสำเร็จของคุณ ${nameForSpeak} ✨</div>
+                            <img src="${dataUrl}">
+                            <a href="${dataUrl}" download="FreeRunSunny_Certificate.png" class="btn-save">💾 บันทึกรูปภาพ</a>
+                            <p style="font-size:0.8rem; margin-top:10px; color:#888;">(กดค้างที่รูปหรือกดปุ่มเพื่อบันทึก)</p>
+                        </body>
+                        </html>
+                    `);
+                    win.document.close();
+                } else {
+                    alert("ยินดีด้วยค่ะ! อย่าลืมกดอนุญาต Pop-up เพื่อชมใบเกียรติบัตรของคุณนะคะ");
+                }
+            };
+
+            img.onerror = function() { 
+                showLoading(false); 
+                alert("ไม่สามารถดึงรูปใบประกาศได้"); 
+            };
+
+        } catch (error) {
+            console.error("Error in generateCertificate:", error);
+            showLoading(false);
+        }
+    }
+
+    async function fetchDataFromCloud() {
+        showLoading(true);
+        try {
+            const res = await fetch(SCRIPT_URL);
+            const rows = await res.json();
+            let summary = {}, grandTotal = 0;
+            namesDict = {};
+            rows.slice(1).forEach(r => {
+                const bib = String(r[2]).trim(), type = r[1], val = r[3], d = parseFloat(r[5] || 0);
+                if(type === 'REG') namesDict[bib] = val;
+                if(type === 'RUN') { summary[bib] = (summary[bib] || 0) + d; grandTotal += d; }
+            });
+
+            document.getElementById('grandTotalKm').innerText = grandTotal.toFixed(2);
+            fullSortedData = Object.entries(summary).sort((a, b) => b[1] - a[1]);
+
+            if (grandTotal >= 5000) {
+                const currentMilestone = Math.floor(grandTotal / 1000) * 1000;
+                if (window.lastMilestone !== currentMilestone) {
+                    triggerConfetti(); 
+                    window.lastMilestone = currentMilestone; 
+                }
+            }
+            
+            changePage(1); 
+        } catch(e) {
+            console.error("Error fetching data:", e);
+        }
+        showLoading(false);
+    }
 
     function changePage(pageNo) {
         const pageSize = 30;
@@ -600,27 +532,14 @@ function changePage(pageNo) {
         const end = start + pageSize;
         const pageData = fullSortedData.slice(start, end);
         
-        // อัปเดตตาราง
-        document.getElementById('top10Body').innerHTML = pageData.map(([bib, d], i) => `<tr><td>${start + i + 1}</td><td><span class="badge bg-dark">${bib}</span></td><td><b>${namesDict[bib] || 'นักวิ่ง'}</b></td><td class="text-end fw-bold text-primary">${d.toFixed(2)}</td></tr>`).join('');
+        document.getElementById('top10Body').innerHTML = pageData.map(([bib, d], i) => 
+            `<tr><td>${start + i + 1}</td><td><span class="badge bg-dark">${bib}</span></td><td><b>${namesDict[bib] || 'นักวิ่ง'}</b></td><td class="text-end fw-bold text-primary">${d.toFixed(2)}</td></tr>`
+        ).join('');
         
-        // สลับสถานะปุ่ม
         document.querySelectorAll('.pagination-btn').forEach((btn, idx) => {
             if (idx + 1 === pageNo) btn.classList.add('active');
             else btn.classList.remove('active');
         });
-    }
-
-    function playFireworkSound() {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        for(let i=0; i<3; i++) {
-            setTimeout(() => {
-                const osc = audioCtx.createOscillator(); const gn = audioCtx.createGain();
-                osc.type = 'square'; osc.connect(gn); gn.connect(audioCtx.destination);
-                osc.frequency.setValueAtTime(100, audioCtx.currentTime); gn.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                gn.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.2);
-                osc.start(); osc.stop(audioCtx.currentTime + 1.2);
-            }, i * 600);
-        }
     }
 
     function unlockAudio() {
@@ -637,32 +556,32 @@ function changePage(pageNo) {
     }
 
     function showLoading(s) { document.getElementById('loading').style.display = s ? 'flex' : 'none'; }
+
     function triggerConfetti() {
-    var duration = 5 * 1000;
-    var animationEnd = Date.now() + duration;
-    var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+        var duration = 5 * 1000;
+        var animationEnd = Date.now() + duration;
+        var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
 
-    var interval = setInterval(function() {
-        var timeLeft = animationEnd - Date.now();
-        if (timeLeft <= 0) return clearInterval(interval);
+        var interval = setInterval(function() {
+            var timeLeft = animationEnd - Date.now();
+            if (timeLeft <= 0) return clearInterval(interval);
 
-        var particleCount = 50 * (timeLeft / duration);
-        confetti(Object.assign({}, defaults, { particleCount, origin: { x: 0.2, y: 0.6 } }));
-        confetti(Object.assign({}, defaults, { particleCount, origin: { x: 0.8, y: 0.6 } }));
-    }, 250);
-}// --- ฟังก์ชันทำงานอัตโนมัติเมื่อเปิดเว็บ ---
-window.onload = function() {
-    const savedBib = localStorage.getItem('lastUsedBib');
-    if (savedBib) {
-        // ถ้าเคยจำ BIB ไว้ ให้เอาไปใส่ในช่องค้นหาให้เลย
-        const inputField = document.getElementById('myBibSearch');
-        if (inputField) {
-            inputField.value = savedBib;
-            // แถมพิเศษ: สั่งให้ระบบโหลดข้อมูลให้เลยโดยที่นักวิ่งไม่ต้องกดปุ่ม!
-            loadMyStats(); 
-        }
+            var particleCount = 50 * (timeLeft / duration);
+            confetti(Object.assign({}, defaults, { particleCount, origin: { x: 0.2, y: 0.6 } }));
+            confetti(Object.assign({}, defaults, { particleCount, origin: { x: 0.8, y: 0.6 } }));
+        }, 250);
     }
-};
+
+    window.onload = function() {
+        const savedBib = localStorage.getItem('lastUsedBib');
+        if (savedBib) {
+            const inputField = document.getElementById('myBibSearch');
+            if (inputField) {
+                inputField.value = savedBib;
+                loadMyStats(); 
+            }
+        }
+    };
 </script>
 </body>
 </html>
