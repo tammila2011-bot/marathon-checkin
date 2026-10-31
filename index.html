@@ -581,15 +581,12 @@
     }
 
     window.onload = function() {
-        const savedBib = localStorage.getItem('lastUsedBib');
-        if (savedBib) {
-            const inputField = document.getElementById('myBibSearch');
-            if (inputField) {
-                inputField.value = savedBib;
-                loadMyStats(); 
-            }
-        }
-    };
+    const savedBib = localStorage.getItem('lastUsedBib');
+    if (savedBib && document.getElementById('myBibSearch')) {
+        document.getElementById('myBibSearch').value = savedBib;
+        // ปล่อยให้ผู้ใช้กดปุ่มดูสถิติเอง หรือถ้าจะให้โหลดอัตโนมัติค่อยใส่เงื่อนไขหน่วงเวลาเล็กน้อย
+    }
+};
 </script>
 </body>
 </html>
