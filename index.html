@@ -54,7 +54,7 @@
         <ul class="small">
             <li>รางวัล Free Run Sunny 2.0 เดินวิ่งทุกระยะ 🥉 รับใบเกียรติบัตรออนไลน์ทันที | 🥈 ครบระยะ 104 กม.เลือกรับจานหรือถ้วยfinisher104 Km. หรือใช้สิทธิซื้อเสื้อวิ่ง Free Run Sunny2.0 ราคา 99 บาท | 🥇 ครบ Sunny 2.0 ลำดับที่ 1-10 รับโล่รางวัลสุขภาพดี</li>
             <li>รับรางวัลที่ศาลา 104 ท่าน้ำวัดหลวง วันที่ 6 ธค.69 เวลา 09.30 น. หรือแจ้งสอบถามทาง Inbox เพจ</li>         
-            <li>โครงการ Real Hero Chiangkhong นักวิ่งที่ผลวิ่งสะสมตั้งแต่ 50 กม.ขึ้นไป และร่วมบริจาคโลหิตที่รพ.ยุพราชเชียงของ 1 ครั้ง รับฟรีเสื้อ Real Hero ที่ห้องบริจาคโลหิต รพ.จนกว่าเสื้อหมด</li>
+            <li>โครงการ Real Hero Chiangkhong นักวิ่งที่ผลวิ่งสะสมตั้งแต่ 50 กม.ขึ้นไป และร่วมบริจาคโลหิตที่รพ.ยุพราชเชียงของ 1 ครั้ง รับฟรีเสื้อ Hero ที่ห้องบริจาคโลหิต รพ.จนกว่าเสื้อหมด</li>
             <li>โครงการ Fighting Stroke ผู้ป่วยที่มีทะเบียนในระบบบำบัดสุขภาพ รพ.ยุพราชเชียงของ สามารถร่วมสะสมระยะได้ตั้งแต่ 1 ตค.-5 ธค.69 ครบ 104 กม.รับฟรีเสื้อคู่(ทั้งผู้ป่วยและผู้ดูแล) ดูรายละเอียดในเพจFree Run Sunday@Chiangkhong</li>
         </ul>
       </div>
@@ -233,6 +233,9 @@
             
             document.getElementById('scanStatus').innerText = "📍 พบจุด: " + pointNames[p]; 
             
+            // 🔊 จุดที่ 1: พูดแจ้งเตือนทันทีระหว่างรอตรวจสอบชื่อ
+            speak("รอสักครู่ค่ะ กำลังตรวจสอบจุดสแกน");
+            
             const bib = document.getElementById('scanBib').value.trim();
             const name = await getNameFromDatabase(bib);
 
@@ -312,14 +315,20 @@
         
         showLoading(false);
 
+        // 🔊 จุดที่ 2: หน่วงเวลาเพิ่มขึ้น (เป็น 7.5 วินาที) ให้เสียงพูดรายงานระยะทางและให้กำลังใจจบสมบูรณ์ก่อนเปลี่ยนหน้า
         setTimeout(() => {
             speak(msg); 
             if(currentBtn) currentBtn.innerText = "บันทึกสำเร็จแล้ว ✅";
 
             document.getElementById('myBibSearch').value = bib;
-            bootstrap.Tab.getOrCreateInstance(document.getElementById('pills-me-tab')).show();
-            loadMyStats();
-            resetScannerUI(); 
+            
+            // หน่วงเวลาต่ออีกนิด (2.5 วินาทีหลังพูดจบ) ค่อยสลับไปหน้าสถิติฉัน
+            setTimeout(() => {
+                bootstrap.Tab.getOrCreateInstance(document.getElementById('pills-me-tab')).show();
+                loadMyStats();
+                resetScannerUI(); 
+            }, 3000);
+
         }, 5000); 
     }
 
