@@ -504,35 +504,47 @@
     }
 
     async function fetchDataFromCloud() {
-        showLoading(true);
-        try {
-            const res = await fetch(SCRIPT_URL);
-            const rows = await res.json();
-            let summary = {}, grandTotal = 0;
-            namesDict = {};
+    showLoading(true);
+    try {
+        const res = await fetch(SCRIPT_URL);
+        const rows = await res.json();
+        let summary = {}, grandTotal = 0;
+        namesDict = {};
+        
+        // เช็คความปลอดภัยว่า rows เป็น Array จริงไหม
+        if (Array.isArray(rows)) {
             rows.slice(1).forEach(r => {
-                const bib = String(r[2]).trim(), type = r[1], val = r[3], d = parseFloat(r[5] || 0);
-                if(type === 'REG') namesDict[bib] = val;
-                if(type === 'RUN') { summary[bib] = (summary[bib] || 0) + d; grandTotal += d; }
-            });
-
-            document.getElementById('grandTotalKm').innerText = grandTotal.toFixed(2);
-            fullSortedData = Object.entries(summary).sort((a, b) => b[1] - a[1]);
-
-            if (grandTotal >= 5000) {
-                const currentMilestone = Math.floor(grandTotal / 1000) * 1000;
-                if (window.lastMilestone !== currentMilestone) {
-                    triggerConfetti(); 
-                    window.lastMilestone = currentMilestone; 
+                const bib = r[2] ? String(r[2]).trim() : '';
+                const type = r[1];
+                const val = r[3];
+                const d = parseFloat(r[5] || 0);
+                
+                if(type === 'REG' && bib) namesDict[bib] = val;
+                if(type === 'RUN' && bib) { 
+                    summary[bib] = (summary[bib] || 0) + d; 
+                    grandTotal += d; 
                 }
-            }
-            
-            changePage(1); 
-        } catch(e) {
-            console.error("Error fetching data:", e);
+            });
         }
-        showLoading(false);
+
+        document.getElementById('grandTotalKm').innerText = grandTotal.toFixed(2);
+        fullSortedData = Object.entries(summary).sort((a, b) => b[1] - a[1]);
+
+        if (grandTotal >= 5000) {
+            const currentMilestone = Math.floor(grandTotal / 1000) * 1000;
+            if (window.lastMilestone !== currentMilestone) {
+                triggerConfetti(); 
+                window.lastMilestone = currentMilestone; 
+            }
+        }
+        
+        changePage(1); 
+    } catch(e) {
+        console.error("Error fetching data:", e);
+        // แสดงตารางว่างหรือแจ้งเตือนเบาๆ แทนหน้าค้าง
     }
+    showLoading(false);
+}
 
     function changePage(pageNo) {
         const pageSize = 30;
